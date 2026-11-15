@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+matplotlib
+edge-tts
+google-api-python-client
+google-auth
+feedparser

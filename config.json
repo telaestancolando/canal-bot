@@ -1,0 +1,78 @@
+{
+  "canal": "Tu Dinero, Su Fiesta",
+  "usuario_instagram": "@tudinerosufiesta",
+  "eslogan": "Subvenciones y escándalos",
+  "voz_a": "es-ES-AlvaroNeural",
+  "voz_b": "es-ES-ElviraNeural",
+  "modelo_gemini": "gemini-flash-latest",
+  "version_api_instagram": "v23.0",
+  "dias_atras_boe": 3,
+  "colores": {
+    "fondo": "#0B1F3A",
+    "acento": "#F2B705",
+    "rojo": "#D7263D",
+    "texto": "#FFFFFF",
+    "suave": "#C9D3E3"
+  },
+  "constantes": {
+    "poblacion_espana": 49000000
+  },
+  "palabras_clave_boe": [
+    "subvención",
+    "subvenciones",
+    "concesión directa",
+    "ayuda",
+    "ayudas",
+    "convenio",
+    "contrato",
+    "cooperación",
+    "fondo",
+    "euros"
+  ],
+  "hashtags": "#tudinerosufiesta #gobierno #dineropublico #corrupcion #subvenciones #impuestos #españa #politica",
+  "youtube_auditado": false,
+  "calendario": [
+    "dinero",
+    "escandalo",
+    "dinero",
+    "escandalo",
+    "dinero",
+    "dinero",
+    "dinero"
+  ],
+  "feeds_prensa": {
+    "El Mundo": "https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml",
+    "ABC": "https://www.abc.es/rss/2.0/espana/",
+    "El Confidencial": "https://rss.elconfidencial.com/espana/",
+    "El Español": "https://www.elespanol.com/rss/espana/",
+    "Europa Press": "https://www.europapress.es/rss/rss.aspx?ch=00066",
+    "El País": "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/espana/portada"
+  },
+  "palabras_clave_escandalo": [
+    "corrupción",
+    "investigad",
+    "imputad",
+    "juez",
+    "jueza",
+    "uco",
+    "tribunal de cuentas",
+    "dimisión",
+    "dimite",
+    "escándalo",
+    "malversación",
+    "adjudicación",
+    "contrato",
+    "enchufe",
+    "cesa",
+    "polémica",
+    "fiscalía",
+    "sumario",
+    "comisión",
+    "rescate",
+    "mascarillas",
+    "inmigración",
+    "regularización",
+    "okupa",
+    "impuesto"
+  ]
+}
