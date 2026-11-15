@@ -75,13 +75,34 @@ def texto_boe(item):
     return texto, url_de(item.get("url_html")) or url
 
 
+def fecha_historica():
+    """Recorre en orden cronológico los años de Gobierno (desde 'inicio_gobierno') de forma que
+    entre 'repaso_desde' y 'repaso_hasta' se llegue al presente. Fuera de ese periodo, el BOE de hoy."""
+    h = CFG.get("repaso_historico")
+    if not h:
+        return None
+    hoy = dt.date.today()
+    ini, fin = dt.date.fromisoformat(h["repaso_desde"]), dt.date.fromisoformat(h["repaso_hasta"])
+    if not (ini <= hoy <= fin):
+        return None
+    origen = dt.date.fromisoformat(h["inicio_gobierno"])
+    frac = (hoy - ini).days / max((fin - ini).days, 1)
+    return origen + dt.timedelta(days=int(frac * (hoy - origen).days))
+
+
 def candidatos():
     usados = set(json.loads(HISTORIAL.read_text()) if HISTORIAL.exists() else [])
     claves = [k.lower() for k in CFG["palabras_clave_boe"]]
-    hoy = dt.date.today()
+    base = fecha_historica()
+    if base:
+        log("Repaso histórico: BOE alrededor de", base)
+        fechas = [base + dt.timedelta(days=k) for k in range(0, 21, 2)]  # unas tres semanas de BOE
+    else:
+        hoy = dt.date.today()
+        fechas = [hoy - dt.timedelta(days=d) for d in range(CFG["dias_atras_boe"] + 1)]
     lista = []
-    for d in range(CFG["dias_atras_boe"] + 1):
-        for it in items_boe(hoy - dt.timedelta(days=d)):
+    for fecha in fechas:
+        for it in items_boe(fecha):
             t = it["titulo"]
             ident = it.get("identificador", t)
             if ident in usados:
@@ -163,6 +184,9 @@ NORMAS EDITORIALES (obligatorias):
 - Prohibido: atribuir delitos, acusar a personas concretas de ilegalidades, señalar a
   colectivos por nacionalidad, raza o religión, o afirmar algo que el texto no diga.
 - Cita siempre la fuente (p. ej. "según el BOE de [fecha]" o "según publica [medio]").
+- Si la disposición es de años anteriores, dilo claramente ("en 2019, el Gobierno...") para
+  que el espectador vea la evolución de estos años de Gobierno.
+- No publiques ni cites encuestas electorales.
 """
 
 NORMAS_ESCANDALO = """
@@ -608,6 +632,10 @@ def subir_instagram(video_url, caption):
 
 # ---------------------------------------------------------------- Principal
 def main():
+    hoy = dt.date.today().isoformat()
+    if hoy in CFG.get("dias_sin_publicar", []):
+        log("Hoy no se publica (día bloqueado en config.json):", hoy)
+        return
     log("Modo de hoy:", MODO)
     cands = candidatos_prensa() if MODO == "escandalo" else candidatos()
     if not cands:

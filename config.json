@@ -74,5 +74,14 @@
     "regularización",
     "okupa",
     "impuesto"
+  ],
+  "repaso_historico": {
+    "inicio_gobierno": "2018-06-02",
+    "repaso_desde": "2026-11-16",
+    "repaso_hasta": "2026-11-27"
+  },
+  "dias_sin_publicar": [
+    "2026-11-28",
+    "2026-11-29"
   ]
 }
