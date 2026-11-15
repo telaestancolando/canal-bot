@@ -569,11 +569,19 @@ def renovar_token_ig(token):
 
 
 def subir_instagram(video_url, caption):
-    token = renovar_token_ig(os.environ["IG_TOKEN"])
-    base = f"https://graph.instagram.com/{CFG['version_api_instagram']}"
-    yo = requests.get(f"{base}/me", params={"fields": "user_id,username", "access_token": token},
-                      timeout=60).json()
-    uid = yo.get("user_id") or yo["id"]
+    token = os.environ["IG_TOKEN"].strip()
+    if token.startswith("EAA"):
+        # Token de usuario del sistema (inicio de sesión unificado): no caduca, va por graph.facebook.com
+        base = f"https://graph.facebook.com/{CFG['version_api_instagram']}"
+        uid = os.environ.get("IG_USER_ID", "").strip()
+        if not uid:
+            raise RuntimeError("Falta el secret IG_USER_ID (ID de la cuenta de Instagram)")
+    else:
+        token = renovar_token_ig(token)
+        base = f"https://graph.instagram.com/{CFG['version_api_instagram']}"
+        yo = requests.get(f"{base}/me", params={"fields": "user_id,username", "access_token": token},
+                          timeout=60).json()
+        uid = yo.get("user_id") or yo["id"]
     r = requests.post(f"{base}/{uid}/media", data={
         "media_type": "REELS", "video_url": video_url, "caption": caption[:2200],
         "share_to_feed": "true", "access_token": token}, timeout=120).json()
@@ -645,12 +653,17 @@ def main():
     textos.write_text(f"TITULO:\n{g['titulo_youtube']}\n\nDESCRIPCION:\n{descripcion}\n\n"
                       f"TITULO SHORT:\n{g['titulo_post'][:85]} #Shorts\n", encoding="utf-8")
     # El corto (y, si YouTube aun no esta auditado, todo lo demas) queda en una "release" de GitHub
-    adjuntos = [corto] if CFG["youtube_auditado"] else [corto, largo, SALIDA / "miniatura.png", textos]
-    video_url = url_publica(adjuntos, etiqueta)
     caption = (f"{g['titulo_post']}\n\n{g['texto_post']}\n\n💬 {pregunta}\n"
                f"🔁 Compártelo con quien siga pensando que no pasa nada\n📌 Guárdalo para tenerlo a mano\n\n"
                f"Fuente: {g.get('fuente_corta', 'BOE')}\n\n{tags_h} {CFG['hashtags']}")
-    subir_instagram(video_url, caption)
+    with open(textos, "a", encoding="utf-8") as fh:
+        fh.write(f"\nTEXTO INSTAGRAM:\n{caption}\n")
+    adjuntos = [corto] if (CFG["youtube_auditado"] and os.environ.get("IG_TOKEN")) else [corto, largo, SALIDA / "miniatura.png", textos]
+    video_url = url_publica(adjuntos, etiqueta)
+    if os.environ.get("IG_TOKEN"):
+        subir_instagram(video_url, caption)
+    else:
+        log("Sin IG_TOKEN: el Reel y su texto quedan en Releases para subirlos a mano")
     if CFG["youtube_auditado"]:
         yt = youtube()
         subir_youtube(yt, largo, g["titulo_youtube"], descripcion, tags_yt, SALIDA / "miniatura.png")
