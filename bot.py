@@ -62,17 +62,30 @@ def items_boe(fecha):
 
 
 def texto_boe(item):
+    from bs4 import BeautifulSoup
+    import warnings
+    warnings.filterwarnings("ignore")
+
     def url_de(v):
         return v.get("texto") if isinstance(v, dict) else v
 
-    url = url_de(item.get("url_xml")) or url_de(item.get("url_html"))
-    r = requests.get(url, headers=UA, timeout=60)
-    r.raise_for_status()
-    from bs4 import BeautifulSoup
-    sopa = BeautifulSoup(r.content, "html.parser")
-    cuerpo = sopa.find("texto") or sopa.find(id="textoxslt") or sopa
-    texto = re.sub(r"\s+", " ", cuerpo.get_text(" ")).strip()
-    return texto, url_de(item.get("url_html")) or url
+    mejor, url_ok = "", None
+    for clave in ("url_xml", "url_html"):
+        url = url_de(item.get(clave))
+        if not url:
+            continue
+        try:
+            r = requests.get(url, headers=UA, timeout=60)
+            r.raise_for_status()
+        except Exception as ex:
+            log("BOE no responde:", url, ex)
+            continue
+        sopa = BeautifulSoup(r.content, "html.parser")
+        cuerpo = sopa.find("texto") or sopa.find(id="textoxslt") or sopa.find(id="DOdocText") or sopa
+        texto = re.sub(r"\s+", " ", cuerpo.get_text(" ")).strip()
+        if len(texto) > len(mejor):
+            mejor, url_ok = texto, url
+    return mejor, url_de(item.get("url_html")) or url_ok
 
 
 def fecha_historica():
@@ -270,41 +283,75 @@ def digitos(s):
     return re.sub(r"[^\d]", "", s)
 
 
+NUM = r"(?<![A-Za-z\d])\d[\d.,]*\d(?![A-Za-z\d])|(?<![A-Za-z\d.,])\d(?![A-Za-z\d.,])"
+
+
+def valor_es(n):
+    """'1.250.000,50' -> 1250000.5 ; '130.000' -> 130000 ; '0,003' -> 0.003"""
+    n = n.strip(".,")
+    try:
+        if "," in n:
+            ent, dec = n.rsplit(",", 1)
+            return float(ent.replace(".", "") + "." + dec)
+        if re.fullmatch(r"\d{1,3}(\.\d{3})+", n):
+            return float(n.replace(".", ""))
+        return float(n)
+    except ValueError:
+        return None
+
+
 def verificar(g, texto):
-    fuente = {digitos(n) for n in re.findall(r"\d[\d.,]*\d|\d", texto)}
-    fuente |= {str(v) for v in CFG["constantes"].values()}
-    resultados = set()
+    fuente = set()
+    for n in re.findall(r"\d[\d.,]*\d|\d", texto):
+        v = valor_es(n)
+        if v is not None:
+            fuente.add(v)
+        fuente.add(float(digitos(n) or 0))
+    fuente |= {float(v) for v in CFG["constantes"].values()}
+    calculados = []
     for c in g.get("calculos", []):
         op = c["operacion"]
         if not re.fullmatch(r"[\d\s.+\-*/()]+", op):
             raise ValueError(f"Cálculo no permitido: {op}")
         for n in re.findall(r"\d+(?:\.\d+)?", op):
-            if digitos(n) not in fuente:
+            if float(n) not in fuente:
                 raise ValueError(f"Operando {n} no está en la fuente")
-        valor = eval(op, {"__builtins__": {}})
-        if abs(valor - float(c["resultado"])) > max(0.02 * abs(valor), 0.01):
-            raise ValueError(f"Cálculo mal hecho: {op} = {valor}, no {c['resultado']}")
-        resultados.add(digitos(f"{valor:.0f}"))
-        resultados.add(digitos(str(c["resultado"])))
-    errores = []
+        calculados.append(eval(op, {"__builtins__": {}}))
+
+    def respaldado(v):
+        if any(abs(v - a) <= 1e-9 * max(1, abs(a)) for a in fuente):
+            return True
+        # resultados de cálculos: se permite el redondeo ("unos 3 céntimos")
+        return any(abs(v - a) <= max(0.06 * abs(a), 0.005) or abs(v - a * 100) <= max(0.06 * abs(a * 100), 0.5)
+                   for a in calculados)
+
     piezas = []
     for e in g["escenas"]:
         piezas += [e.get("narracion", ""), e.get("rotulo", ""), str(e.get("cifra", ""))]
         # las "opciones" de una pregunta tipo concurso son señuelos y no se verifican
         for d in e.get("datos", []):
-            x = float(d["valor"])
-            piezas.append(f"{x:.0f}" if x.is_integer() else str(x))
+            piezas.append(str(d["valor"]).replace(".", ","))
     piezas += [g["titulo_youtube"], g["titulo_post"], g["texto_post"], g.get("descripcion", "")]
+    errores = []
+    multiplicadores = [(r"mil\s+millones", 1e9), (r"mill(?:ones|ón)", 1e6), (r"mil\b", 1e3)]
     for trozo in piezas:
-        for n in re.findall(r"\d[\d.,]*\d|\d", trozo):
-            d = digitos(n)
-            if len(d) <= 1 or d in fuente or d in resultados:
-                continue
-            if any(d.rstrip("0") and d.rstrip("0") == r.rstrip("0") for r in resultados):
+        # "3,2 millones" -> 3.200.000 (se comprueba entero, con margen por el redondeo)
+        for patron, mult in multiplicadores:
+            for m in re.finditer(r"(\d[\d.,]*)\s*" + patron, trozo):
+                v = valor_es(m.group(1))
+                if v is None:
+                    continue
+                v *= mult
+                if not (respaldado(v) or any(abs(v - a) <= 0.05 * a for a in fuente if a > 0)):
+                    errores.append(m.group(0))
+            trozo = re.sub(r"(\d[\d.,]*)\s*" + patron, " ", trozo)
+        for n in re.findall(NUM, trozo):
+            v = valor_es(n)
+            if v is None or v < 10 or respaldado(v):
                 continue
             errores.append(n)
     if errores:
-        raise ValueError(f"Cifras sin respaldo en el BOE: {sorted(set(errores))}")
+        raise ValueError(f"Cifras sin respaldo en la fuente: {sorted(set(errores))}")
     log("Verificación OK: todas las cifras están en la fuente")
 
 
