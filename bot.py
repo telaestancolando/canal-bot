@@ -129,19 +129,24 @@ def texto_articulo(link):
 
 # ---------------------------------------------------------------- 2. Gemini
 def gemini(prompt):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{CFG['modelo_gemini']}:generateContent"
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.8},
     }
-    for intento in range(4):
-        r = requests.post(url, json=body, timeout=180,
-                          headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
-        if r.status_code == 200:
-            txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-            return json.loads(txt)
-        log("Gemini", r.status_code, r.text[:300])
-        time.sleep(30 * (intento + 1))
+    # Si el modelo principal tarda o falla, se prueba con el ligero (más rápido)
+    modelos = [CFG["modelo_gemini"], CFG["modelo_gemini"], "gemini-flash-lite-latest", "gemini-flash-lite-latest"]
+    for intento, modelo in enumerate(modelos):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
+        try:
+            r = requests.post(url, json=body, timeout=360,
+                              headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
+            if r.status_code == 200:
+                txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+                return json.loads(txt)
+            log("Gemini", modelo, r.status_code, r.text[:300])
+        except (requests.exceptions.RequestException, KeyError, ValueError) as ex:
+            log("Gemini", modelo, "falló:", ex)
+        time.sleep(20 * (intento + 1))
     raise RuntimeError("Gemini no responde")
 
 
@@ -198,7 +203,7 @@ para el canal "{CFG['canal']}". Dos locutores se alternan: A (hombre) y B (mujer
 TÍTULO: {tema['titulo']}
 URL: {url}
 TEXTO FUENTE:
-{texto[:30000]}
+{texto[:15000]}
 
 Devuelve JSON con esta forma:
 {{
