@@ -202,26 +202,37 @@ TEXTO FUENTE:
 
 Devuelve JSON con esta forma:
 {{
- "titulo_youtube": "máx 90 caracteres, gancho fuerte",
+ "titulo_youtube": "máx 70 caracteres. Empieza por la palabra clave principal y añade curiosidad o indignación (cifra + destino + giro). Ej: 'Subvención de 3.200.000 € para... ¿en serio?'",
  "fuente_corta": "BOE o nombre del medio",
- "descripcion": "3-5 frases + fuente con URL",
- "tags": ["..."],
- "titulo_post": "titular para Instagram con 1-2 emojis",
- "texto_post": "explicación amena de 4-6 frases para Instagram, con la fuente al final",
+ "palabras_clave": ["5-8 búsquedas reales que haría la gente en Google/YouTube sobre este tema"],
+ "descripcion": "primeras 2 líneas con la palabra clave principal y el gancho (es lo que se ve en el buscador); luego 3-4 frases explicando; sin URL",
+ "tags": ["12-15 etiquetas: palabras clave, nombres de organismos y temas"],
+ "hashtags": ["5-8 hashtags concretos del tema, con #"],
+ "pregunta_comentarios": "pregunta polémica pero respetuosa para que la gente comente (¿Tú qué harías con ese dinero?)",
+ "titulo_post": "primera línea del post de Instagram: gancho brutal con 1-2 emojis, máx 80 caracteres",
+ "texto_post": "post ameno y fácil de leer: 4-6 frases cortas, con saltos de línea y emojis como viñetas (📌 💸 🧐), datos clave, la fuente al final y una llamada a guardar y compartir",
  "paises": ["códigos ISO3 de países que salgan, o vacío"],
  "calculos": [{{"operacion": "1250000 / 49000000", "resultado": 0.03}}],
  "escenas": [
    {{"locutor": "A", "narracion": "...", "visual": "portada", "rotulo": "frase corta", "short": true}},
-   {{"locutor": "B", "narracion": "...", "visual": "cifra", "cifra": "1.250.000 €", "rotulo": "..."}},
+   {{"locutor": "B", "narracion": "¿Cuánto crees que ha costado? Mira las opciones... te lo digo en tres segundos.", "visual": "pregunta", "rotulo": "¿Cuánto crees que ha costado?", "opciones": ["A) ...", "B) ...", "C) ..."], "short": true}},
+   {{"locutor": "A", "narracion": "...", "visual": "cifra", "cifra": "1.250.000 €", "rotulo": "...", "short": true}},
    {{"locutor": "A", "narracion": "...", "visual": "barras", "datos": [{{"etiqueta": "...", "valor": 1250000}}], "rotulo": "..."}},
    {{"locutor": "B", "narracion": "...", "visual": "mapa", "rotulo": "..."}},
    {{"locutor": "A", "narracion": "...", "visual": "texto", "rotulo": "..."}},
    {{"locutor": "B", "narracion": "Síguenos para más...", "visual": "cierre", "rotulo": "..."}}
  ]
 }}
-Reglas de escenas: 10 a 16 escenas; la primera es "portada" con un gancho en los 5 primeros
-segundos; marca "short": true en 3-5 escenas que juntas cuenten la historia en menos de
-60 segundos; usa "mapa" solo si hay países; "barras" solo con cifras del texto."""
+Reglas de escenas: 10 a 16 escenas, cada una de 1 a 3 frases cortas (ritmo rápido, estilo
+TikTok/YouTube Shorts). La primera es "portada": gancho en los 3 primeros segundos (una
+pregunta o un dato que indigne), sin saludos. Incluye al menos una escena "pregunta" tipo
+concurso justo antes de revelar la cifra principal: las opciones solo aparecen en pantalla,
+la narración NO las lee; la respuesta correcta se revela en la escena siguiente. Habla
+directamente al espectador ("tú", "tu dinero"), con ironía y frases que se puedan citar.
+A mitad del vídeo, una frase pidiendo que se suscriba si le está indignando. La última es
+"cierre" con la pregunta para comentarios. Marca "short": true en 4-6 escenas que juntas
+cuenten la historia en menos de 60 segundos (incluida la pregunta y la revelación); usa
+"mapa" solo si hay países; "barras" solo con cifras del texto."""
     return gemini(p)
 
 
@@ -250,10 +261,11 @@ def verificar(g, texto):
     piezas = []
     for e in g["escenas"]:
         piezas += [e.get("narracion", ""), e.get("rotulo", ""), str(e.get("cifra", ""))]
+        # las "opciones" de una pregunta tipo concurso son señuelos y no se verifican
         for d in e.get("datos", []):
             x = float(d["valor"])
             piezas.append(f"{x:.0f}" if x.is_integer() else str(x))
-    piezas += [g["titulo_youtube"], g["titulo_post"], g["texto_post"]]
+    piezas += [g["titulo_youtube"], g["titulo_post"], g["texto_post"], g.get("descripcion", "")]
     for trozo in piezas:
         for n in re.findall(r"\d[\d.,]*\d|\d", trozo):
             d = digitos(n)
@@ -314,7 +326,7 @@ def mundo():
     return MAPA
 
 
-def pintar(escena, g, destino, ancho, alto):
+def pintar(escena, g, destino, ancho, alto, subtitulo=None):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -393,6 +405,16 @@ def pintar(escena, g, destino, ancho, alto):
         mx.set_ylim(-58, 85)
         mx.set_aspect("equal")
         titular(rot, 0.88 if not vertical else 0.84, 44)
+    elif v == "pregunta":
+        titular(rot, 0.8 if vertical else 0.82, 50, c["acento"])
+        ops = escena.get("opciones", [])[:4]
+        for k, op in enumerate(ops):
+            y = (0.6 if vertical else 0.62) - k * (0.11 if vertical else 0.15)
+            ax.add_patch(plt.Rectangle((0.15, y - 0.04), 0.7, 0.08 if vertical else 0.1,
+                                       color="#1F3A5F", ec=c["acento"], lw=3))
+            t = ax.text(0.5, y + (0.0 if vertical else 0.01), op, color=c["texto"], fontproperties=bold,
+                        fontsize=40 * esc, ha="center", va="center")
+            ajustar(t, 0.65, 0.07)
     elif v == "cierre":
         titular(rot or "Síguenos", 0.6, 70, c["acento"])
         ax.text(0.5, 0.35, CFG["usuario_instagram"], color=c["texto"], fontproperties=bold,
@@ -401,6 +423,11 @@ def pintar(escena, g, destino, ancho, alto):
         titular(rot, 0.52, 62)
     ax.text(0.03, 0.025, f"Fuente: {g.get('fuente_corta', 'BOE')}", color=c["suave"], fontproperties=bold,
             fontsize=16 * esc)
+    if subtitulo:
+        ys = 0.2 if vertical else 0.09
+        t = ax.text(0.5, ys, subtitulo, color="#111111", fontproperties=negra, fontsize=(44 if vertical else 36) * esc,
+                    ha="center", va="center", bbox=dict(boxstyle="round,pad=0.35", fc=c["acento"], ec="none"))
+        ajustar(t, 0.9, 0.12)
     fig.savefig(destino, facecolor=c["fondo"])
     plt.close(fig)
 
@@ -417,6 +444,32 @@ def clip(png, mp3, salida, ancho, alto):
                     "-af", "apad", str(salida)], check=True)
 
 
+def trozos(texto, n=5):
+    palabras = texto.split()
+    return [" ".join(palabras[i:i + n]) for i in range(0, len(palabras), n)] or [""]
+
+
+def clip_subtitulado(e, g, mp3, salida, ancho, alto, pref):
+    """Una imagen por cada trozo de frase, con el subtítulo encima, sincronizada por nº de palabras."""
+    d = duracion(mp3) + 0.35
+    partes = trozos(e["narracion"])
+    total = sum(len(x.split()) for x in partes) or 1
+    lista = salida.with_suffix(".txt")
+    lineas = []
+    for k, parte in enumerate(partes):
+        png = SALIDA / f"{pref}_{k:02}.png"
+        pintar(e, g, png, ancho, alto, subtitulo=parte)
+        dur = d * len(parte.split()) / total
+        lineas += [f"file '{png.name}'", f"duration {dur:.3f}"]
+    lineas.append(f"file '{png.name}'")
+    lista.write_text("\n".join(lineas) + "\n")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lista.name,
+                    "-i", mp3.name, "-vf", f"scale={ancho}:{alto},fps=25,format=yuv420p",
+                    "-t", f"{d:.2f}", "-c:v", "libx264", "-preset", "veryfast", "-c:a", "aac",
+                    "-ar", "44100", "-b:a", "160k", "-af", "apad", salida.name], check=True, cwd=SALIDA)
+    return d
+
+
 def unir(clips, salida):
     lista = salida.with_suffix(".txt")
     lista.write_text("".join(f"file '{c.name}'\n" for c in clips))
@@ -427,27 +480,38 @@ def unir(clips, salida):
 
 def montar(g):
     SALIDA.mkdir(exist_ok=True)
-    horiz, vert = [], []
-    escenas = g["escenas"]
-    for i, e in enumerate(escenas):
+    horiz, vert, capitulos, t = [], [], [], 0.0
+    for i, e in enumerate(g["escenas"]):
         mp3 = SALIDA / f"v{i:02}.mp3"
         voz(e["narracion"], e.get("locutor", "A"), mp3)
-        h_png, v_png = SALIDA / f"h{i:02}.png", SALIDA / f"s{i:02}.png"
-        pintar(e, g, h_png, 1920, 1080)
         h = SALIDA / f"h{i:02}.mp4"
-        clip(h_png, mp3, h, 1920, 1080)
+        d = clip_subtitulado(e, g, mp3, h, 1920, 1080, f"h{i:02}")
         horiz.append(h)
+        capitulos.append((t, e.get("rotulo") or e["visual"]))
+        t += d
         if e.get("short") or e["visual"] == "cierre":
-            pintar(e, g, v_png, 1080, 1920)
             s = SALIDA / f"s{i:02}.mp4"
-            clip(v_png, mp3, s, 1080, 1920)
+            clip_subtitulado(e, g, mp3, s, 1080, 1920, f"s{i:02}")
             vert.append(s)
     largo, corto = SALIDA / "video.mp4", SALIDA / "corto.mp4"
     unir(horiz, largo)
     unir(vert, corto)
     pintar({"visual": "portada", "rotulo": g["titulo_youtube"]}, g, SALIDA / "miniatura.png", 1280, 720)
     log(f"Vídeo {duracion(largo):.0f}s, corto {duracion(corto):.0f}s")
+    g["_capitulos"] = capitulos_youtube(capitulos)
     return largo, corto
+
+
+def capitulos_youtube(caps):
+    """Capítulos de YouTube: el primero en 0:00, mínimo 10 s cada uno."""
+    out = []
+    for seg, titulo in caps:
+        if out and seg - out[-1][0] < 10:
+            continue
+        out.append((seg if out else 0, titulo))
+    if len(out) < 3:
+        return ""
+    return "\n".join(f"{int(s // 60)}:{int(s % 60):02d} {tit[:60]}" for s, tit in out)
 
 
 # ---------------------------------------------------------------- 7. YouTube
@@ -569,7 +633,13 @@ def main():
     if PRUEBA:
         log("Modo prueba: no se sube nada. Revisa la carpeta salida/")
         return
-    descripcion = f"{g['descripcion']}\n\nFuente: {url}\n\n{CFG['hashtags']}"
+    tags_h = " ".join(g.get("hashtags", [])[:8])
+    pregunta = g.get("pregunta_comentarios", "")
+    descripcion = (f"{g['descripcion']}\n\n💬 {pregunta} Te leo en comentarios.\n\n"
+                   f"📌 Capítulos:\n{g.get('_capitulos', '')}\n\n"
+                   f"📄 Fuente: {url}\n\n🔔 Suscríbete: un vídeo nuevo cada día sobre tu dinero y sus escándalos.\n"
+                   f"📲 Instagram: {CFG['usuario_instagram']}\n\n{tags_h} {CFG['hashtags']}")
+    tags_yt = (g.get("palabras_clave", []) + g.get("tags", []))[:20]
     etiqueta = f"dia-{dt.date.today():%Y%m%d}-{int(time.time())}"
     textos = SALIDA / "textos_youtube.txt"
     textos.write_text(f"TITULO:\n{g['titulo_youtube']}\n\nDESCRIPCION:\n{descripcion}\n\n"
@@ -577,12 +647,14 @@ def main():
     # El corto (y, si YouTube aun no esta auditado, todo lo demas) queda en una "release" de GitHub
     adjuntos = [corto] if CFG["youtube_auditado"] else [corto, largo, SALIDA / "miniatura.png", textos]
     video_url = url_publica(adjuntos, etiqueta)
-    caption = f"{g['titulo_post']}\n\n{g['texto_post']}\n\nFuente: {g.get('fuente_corta', 'BOE')}\n{url}\n\n{CFG['hashtags']}"
+    caption = (f"{g['titulo_post']}\n\n{g['texto_post']}\n\n💬 {pregunta}\n"
+               f"🔁 Compártelo con quien siga pensando que no pasa nada\n📌 Guárdalo para tenerlo a mano\n\n"
+               f"Fuente: {g.get('fuente_corta', 'BOE')}\n\n{tags_h} {CFG['hashtags']}")
     subir_instagram(video_url, caption)
     if CFG["youtube_auditado"]:
         yt = youtube()
-        subir_youtube(yt, largo, g["titulo_youtube"], descripcion, g.get("tags", []), SALIDA / "miniatura.png")
-        subir_youtube(yt, corto, f"{g['titulo_post'][:85]} #Shorts", descripcion, g.get("tags", []))
+        subir_youtube(yt, largo, g["titulo_youtube"], descripcion, tags_yt, SALIDA / "miniatura.png")
+        subir_youtube(yt, corto, f"{g['titulo_post'][:85]} #Shorts", descripcion, tags_yt)
     else:
         log("YouTube pendiente de auditoria: video listo en la pestana Releases de GitHub")
     usados = json.loads(HISTORIAL.read_text()) if HISTORIAL.exists() else []
