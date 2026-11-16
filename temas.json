@@ -1,66 +1,596 @@
 {
   "accidente": [
-    {"id": "tenerife-1977", "titulo": "Los Rodeos 1977: el peor accidente de la historia", "fuentes": ["es:Desastre de Los Rodeos", "en:Tenerife airport disaster"]},
-    {"id": "af447", "titulo": "Air France 447: el avión que desapareció en el Atlántico", "fuentes": ["es:Vuelo 447 de Air France", "en:Air France Flight 447"]},
-    {"id": "spanair-5022", "titulo": "Spanair 5022: la tragedia de Barajas", "fuentes": ["es:Vuelo 5022 de Spanair", "en:Spanair Flight 5022"]},
-    {"id": "jal123", "titulo": "Japan Airlines 123: 32 minutos sin control", "fuentes": ["es:Vuelo 123 de Japan Airlines", "en:Japan Air Lines Flight 123"]},
-    {"id": "uberlingen", "titulo": "Überlingen: dos aviones, un controlador y una orden contradictoria", "fuentes": ["es:Colisión aérea de Überlingen", "en:2002 Überlingen mid-air collision"]},
-    {"id": "737max", "titulo": "Boeing 737 MAX: Lion Air y Ethiopian, el fallo que nadie explicó a los pilotos", "fuentes": ["es:Vuelo 610 de Lion Air", "es:Vuelo 302 de Ethiopian Airlines", "en:Boeing 737 MAX groundings"]},
-    {"id": "united232", "titulo": "United 232: aterrizar un DC-10 sin mandos", "fuentes": ["es:Vuelo 232 de United Airlines", "en:United Airlines Flight 232"]},
-    {"id": "concorde4590", "titulo": "Air France 4590: el día que cayó el Concorde", "fuentes": ["es:Vuelo 4590 de Air France", "en:Air France Flight 4590"]},
-    {"id": "american191", "titulo": "American 191: el motor que se desprendió en Chicago", "fuentes": ["es:Vuelo 191 de American Airlines", "en:American Airlines Flight 191"]},
-    {"id": "turkish981", "titulo": "Turkish 981: el fallo de la puerta de carga que ya se conocía", "fuentes": ["es:Vuelo 981 de Turkish Airlines", "en:Turkish Airlines Flight 981"]},
-    {"id": "barajas1983", "titulo": "Barajas 1983: choque en la pista con niebla", "fuentes": ["es:Accidente del aeropuerto de Madrid-Barajas de 1983", "en:1983 Madrid runway disaster"]},
-    {"id": "colgan3407", "titulo": "Colgan 3407: la pérdida que cambió la formación de pilotos", "fuentes": ["es:Vuelo 3407 de Colgan Air", "en:Colgan Air Flight 3407"]},
-    {"id": "asiana214", "titulo": "Asiana 214: estrellarse con buen tiempo en San Francisco", "fuentes": ["es:Vuelo 214 de Asiana Airlines", "en:Asiana Airlines Flight 214"]},
-    {"id": "alaska261", "titulo": "Alaska 261: un tornillo sin grasa", "fuentes": ["es:Vuelo 261 de Alaska Airlines", "en:Alaska Airlines Flight 261"]},
-    {"id": "iberia610", "titulo": "Iberia 610: el accidente del monte Oiz", "fuentes": ["es:Vuelo 610 de Iberia", "en:Iberia Flight 610"]},
-    {"id": "kal007", "titulo": "Korean Air 007: derribado en plena Guerra Fría", "fuentes": ["es:Vuelo 007 de Korean Air Lines", "en:Korean Air Lines Flight 007"]}
+    {
+      "id": "tenerife-1977",
+      "titulo": "Los Rodeos 1977: el peor accidente de la historia",
+      "fuentes": [
+        "es:Desastre de Los Rodeos",
+        "en:Tenerife airport disaster"
+      ]
+    },
+    {
+      "id": "af447",
+      "titulo": "Air France 447: el avión que desapareció en el Atlántico",
+      "fuentes": [
+        "es:Vuelo 447 de Air France",
+        "en:Air France Flight 447"
+      ]
+    },
+    {
+      "id": "spanair-5022",
+      "titulo": "Spanair 5022: la tragedia de Barajas",
+      "fuentes": [
+        "es:Vuelo 5022 de Spanair",
+        "en:Spanair Flight 5022"
+      ]
+    },
+    {
+      "id": "lamia2933",
+      "titulo": "LaMia 2933: el vuelo del Chapecoense",
+      "fuentes": [
+        "es:Vuelo 2933 de LaMia",
+        "en:LaMia Flight 2933"
+      ]
+    },
+    {
+      "id": "tam3054",
+      "titulo": "TAM 3054: la pista corta de Congonhas",
+      "fuentes": [
+        "es:Vuelo 3054 de TAM",
+        "en:TAM Airlines Flight 3054"
+      ]
+    },
+    {
+      "id": "jal123",
+      "titulo": "Japan Airlines 123: 32 minutos sin control",
+      "fuentes": [
+        "es:Vuelo 123 de Japan Airlines",
+        "en:Japan Air Lines Flight 123"
+      ]
+    },
+    {
+      "id": "uberlingen",
+      "titulo": "Überlingen: dos aviones, un controlador y una orden contradictoria",
+      "fuentes": [
+        "es:Colisión aérea de Überlingen",
+        "en:2002 Überlingen mid-air collision"
+      ]
+    },
+    {
+      "id": "737max",
+      "titulo": "Boeing 737 MAX: Lion Air y Ethiopian, el fallo que nadie explicó a los pilotos",
+      "fuentes": [
+        "es:Vuelo 610 de Lion Air",
+        "es:Vuelo 302 de Ethiopian Airlines",
+        "en:Boeing 737 MAX groundings"
+      ]
+    },
+    {
+      "id": "avianca52",
+      "titulo": "Avianca 52: sin combustible frente a Nueva York",
+      "fuentes": [
+        "es:Vuelo 52 de Avianca",
+        "en:Avianca Flight 52"
+      ]
+    },
+    {
+      "id": "aeroperu603",
+      "titulo": "Aeroperú 603: volar a ciegas por un trozo de cinta",
+      "fuentes": [
+        "es:Vuelo 603 de Aeroperú",
+        "en:Aeroperú Flight 603"
+      ]
+    },
+    {
+      "id": "united232",
+      "titulo": "United 232: aterrizar un DC-10 sin mandos",
+      "fuentes": [
+        "es:Vuelo 232 de United Airlines",
+        "en:United Airlines Flight 232"
+      ]
+    },
+    {
+      "id": "concorde4590",
+      "titulo": "Air France 4590: el día que cayó el Concorde",
+      "fuentes": [
+        "es:Vuelo 4590 de Air France",
+        "en:Air France Flight 4590"
+      ]
+    },
+    {
+      "id": "american191",
+      "titulo": "American 191: el motor que se desprendió en Chicago",
+      "fuentes": [
+        "es:Vuelo 191 de American Airlines",
+        "en:American Airlines Flight 191"
+      ]
+    },
+    {
+      "id": "turkish981",
+      "titulo": "Turkish 981: el fallo de la puerta de carga que ya se conocía",
+      "fuentes": [
+        "es:Vuelo 981 de Turkish Airlines",
+        "en:Turkish Airlines Flight 981"
+      ]
+    },
+    {
+      "id": "barajas1983",
+      "titulo": "Barajas 1983: choque en la pista con niebla",
+      "fuentes": [
+        "es:Accidente del aeropuerto de Madrid-Barajas de 1983",
+        "en:1983 Madrid runway disaster"
+      ]
+    },
+    {
+      "id": "colgan3407",
+      "titulo": "Colgan 3407: la pérdida que cambió la formación de pilotos",
+      "fuentes": [
+        "es:Vuelo 3407 de Colgan Air",
+        "en:Colgan Air Flight 3407"
+      ]
+    },
+    {
+      "id": "asiana214",
+      "titulo": "Asiana 214: estrellarse con buen tiempo en San Francisco",
+      "fuentes": [
+        "es:Vuelo 214 de Asiana Airlines",
+        "en:Asiana Airlines Flight 214"
+      ]
+    },
+    {
+      "id": "alaska261",
+      "titulo": "Alaska 261: un tornillo sin grasa",
+      "fuentes": [
+        "es:Vuelo 261 de Alaska Airlines",
+        "en:Alaska Airlines Flight 261"
+      ]
+    },
+    {
+      "id": "iberia610",
+      "titulo": "Iberia 610: el accidente del monte Oiz",
+      "fuentes": [
+        "es:Vuelo 610 de Iberia",
+        "en:Iberia Flight 610"
+      ]
+    },
+    {
+      "id": "kal007",
+      "titulo": "Korean Air 007: derribado en plena Guerra Fría",
+      "fuentes": [
+        "es:Vuelo 007 de Korean Air Lines",
+        "en:Korean Air Lines Flight 007"
+      ]
+    },
+    {
+      "id": "lapa3142",
+      "titulo": "LAPA 3142: el despegue sin flaps de Buenos Aires",
+      "fuentes": [
+        "es:Vuelo 3142 de LAPA",
+        "en:LAPA Flight 3142"
+      ]
+    },
+    {
+      "id": "avianca011",
+      "titulo": "Avianca 011: el accidente de Mejorada del Campo",
+      "fuentes": [
+        "es:Vuelo 011 de Avianca",
+        "en:Avianca Flight 011"
+      ]
+    }
   ],
   "aerodinamica": [
-    {"id": "sustentacion", "titulo": "Cómo vuela un avión (y cómo vuela un helicóptero)", "partes_fuentes": [["es:Sustentación", "en:Lift (force)"], ["es:Helicóptero", "en:Helicopter flight controls"]], "partes": ["Cómo vuela un avión: la sustentación", "Cómo vuela un helicóptero: el rotor principal"]},
-    {"id": "perdida", "titulo": "La pérdida y la autorrotación", "partes_fuentes": [["es:Pérdida (aerodinámica)", "en:Stall (fluid dynamics)"], ["es:Autorrotación", "en:Autorotation"]], "partes": ["Qué es una pérdida y por qué un avión deja de volar", "Autorrotación: cómo aterriza un helicóptero sin motor"]},
-    {"id": "mandos", "titulo": "Los mandos: avión frente a helicóptero", "partes_fuentes": [["es:Superficie de control", "en:Flight control surfaces"], ["en:Helicopter flight controls"]], "partes": ["Alerones, timón y profundidad: cómo gira un avión", "Cíclico, colectivo y pedales: cómo se pilota un helicóptero"]},
-    {"id": "flaps-rotorcola", "titulo": "Flaps y rotor de cola", "partes_fuentes": [["es:Flap", "en:Flap (aeronautics)"], ["es:Rotor de cola", "en:Tail rotor"]], "partes": ["Para qué sirven los flaps al despegar y aterrizar", "Por qué un helicóptero necesita rotor de cola"]},
-    {"id": "efectosuelo", "titulo": "El efecto suelo", "partes_fuentes": [["es:Efecto suelo", "en:Ground effect (aerodynamics)"], ["en:Ground effect (aerodynamics)", "en:Helicopter"]], "partes": ["Efecto suelo en aviones: el colchón de aire", "Efecto suelo en helicópteros: por qué flotan mejor cerca del suelo"]},
-    {"id": "velocidad", "titulo": "Los límites de velocidad", "partes_fuentes": [["es:Número de Mach", "en:Mach number", "en:Sound barrier"], ["en:Retreating blade stall"]], "partes": ["La barrera del sonido y el número de Mach", "Por qué los helicópteros no pueden ir más rápido"]},
-    {"id": "vortices", "titulo": "Los torbellinos invisibles", "partes_fuentes": [["es:Estela turbulenta", "en:Wake turbulence"], ["en:Vortex ring state"]], "partes": ["La estela turbulenta: por qué los aviones esperan para despegar", "El anillo de vórtices: la trampa de los helicópteros"]},
-    {"id": "motores", "titulo": "Los motores", "partes_fuentes": [["es:Turbofán", "en:Turbofan"], ["es:Turboeje", "en:Turboshaft"]], "partes": ["Cómo funciona el motor de un avión comercial", "El turboeje: el motor de los helicópteros"]}
+    {
+      "id": "sustentacion",
+      "titulo": "Cómo vuela un avión (y cómo vuela un helicóptero)",
+      "partes_fuentes": [
+        [
+          "es:Sustentación",
+          "en:Lift (force)"
+        ],
+        [
+          "es:Helicóptero",
+          "en:Helicopter flight controls"
+        ]
+      ],
+      "partes": [
+        "Cómo vuela un avión: la sustentación",
+        "Cómo vuela un helicóptero: el rotor principal"
+      ]
+    },
+    {
+      "id": "perdida",
+      "titulo": "La pérdida y la autorrotación",
+      "partes_fuentes": [
+        [
+          "es:Pérdida (aerodinámica)",
+          "en:Stall (fluid dynamics)"
+        ],
+        [
+          "es:Autorrotación",
+          "en:Autorotation"
+        ]
+      ],
+      "partes": [
+        "Qué es una pérdida y por qué un avión deja de volar",
+        "Autorrotación: cómo aterriza un helicóptero sin motor"
+      ]
+    },
+    {
+      "id": "mandos",
+      "titulo": "Los mandos: avión frente a helicóptero",
+      "partes_fuentes": [
+        [
+          "es:Superficie de control",
+          "en:Flight control surfaces"
+        ],
+        [
+          "en:Helicopter flight controls"
+        ]
+      ],
+      "partes": [
+        "Alerones, timón y profundidad: cómo gira un avión",
+        "Cíclico, colectivo y pedales: cómo se pilota un helicóptero"
+      ]
+    },
+    {
+      "id": "flaps-rotorcola",
+      "titulo": "Flaps y rotor de cola",
+      "partes_fuentes": [
+        [
+          "es:Flap",
+          "en:Flap (aeronautics)"
+        ],
+        [
+          "es:Rotor de cola",
+          "en:Tail rotor"
+        ]
+      ],
+      "partes": [
+        "Para qué sirven los flaps al despegar y aterrizar",
+        "Por qué un helicóptero necesita rotor de cola"
+      ]
+    },
+    {
+      "id": "efectosuelo",
+      "titulo": "El efecto suelo",
+      "partes_fuentes": [
+        [
+          "es:Efecto suelo",
+          "en:Ground effect (aerodynamics)"
+        ],
+        [
+          "en:Ground effect (aerodynamics)",
+          "en:Helicopter"
+        ]
+      ],
+      "partes": [
+        "Efecto suelo en aviones: el colchón de aire",
+        "Efecto suelo en helicópteros: por qué flotan mejor cerca del suelo"
+      ]
+    },
+    {
+      "id": "velocidad",
+      "titulo": "Los límites de velocidad",
+      "partes_fuentes": [
+        [
+          "es:Número de Mach",
+          "en:Mach number",
+          "en:Sound barrier"
+        ],
+        [
+          "en:Retreating blade stall"
+        ]
+      ],
+      "partes": [
+        "La barrera del sonido y el número de Mach",
+        "Por qué los helicópteros no pueden ir más rápido"
+      ]
+    },
+    {
+      "id": "vortices",
+      "titulo": "Los torbellinos invisibles",
+      "partes_fuentes": [
+        [
+          "es:Estela turbulenta",
+          "en:Wake turbulence"
+        ],
+        [
+          "en:Vortex ring state"
+        ]
+      ],
+      "partes": [
+        "La estela turbulenta: por qué los aviones esperan para despegar",
+        "El anillo de vórtices: la trampa de los helicópteros"
+      ]
+    },
+    {
+      "id": "motores",
+      "titulo": "Los motores",
+      "partes_fuentes": [
+        [
+          "es:Turbofán",
+          "en:Turbofan"
+        ],
+        [
+          "es:Turboeje",
+          "en:Turboshaft"
+        ]
+      ],
+      "partes": [
+        "Cómo funciona el motor de un avión comercial",
+        "El turboeje: el motor de los helicópteros"
+      ]
+    }
   ],
   "general": [
-    {"id": "boeing-airbus", "titulo": "Boeing contra Airbus: la guerra de los cielos", "fuentes": ["es:Competencia entre Airbus y Boeing", "en:Competition between Airbus and Boeing"], "partes": ["Cómo empezó la guerra entre Boeing y Airbus", "Quién va ganando hoy y por qué"]},
-    {"id": "a320-737", "titulo": "Airbus A320 contra Boeing 737", "fuentes": ["en:Airbus A320 family", "en:Boeing 737"]},
-    {"id": "a380", "titulo": "Por qué fracasó el Airbus A380, el avión más grande", "fuentes": ["es:Airbus A380", "en:Airbus A380"]},
-    {"id": "747", "titulo": "Boeing 747: la reina de los cielos", "fuentes": ["es:Boeing 747", "en:Boeing 747"]},
-    {"id": "concorde", "titulo": "Concorde: por qué ya no volamos supersónicos", "fuentes": ["es:Concorde", "en:Concorde"]},
-    {"id": "cajanegra", "titulo": "Cómo funciona de verdad una caja negra (y por qué es naranja)", "fuentes": ["es:Registrador de vuelo", "en:Flight recorder"]},
-    {"id": "crucero", "titulo": "Por qué los aviones vuelan tan alto", "fuentes": ["en:Cruise (aeronautics)", "es:Altitud de crucero"]},
-    {"id": "autopiloto", "titulo": "El piloto automático: qué hace y qué no", "fuentes": ["es:Piloto automático", "en:Autopilot"]},
-    {"id": "etops", "titulo": "ETOPS: por qué un avión de dos motores puede cruzar el océano", "fuentes": ["en:ETOPS"]},
-    {"id": "controlaereo", "titulo": "Cómo funciona el control aéreo", "fuentes": ["es:Control del tráfico aéreo", "en:Air traffic control"]},
-    {"id": "an225", "titulo": "Antonov An-225: el avión más grande que ha existido", "fuentes": ["es:Antonov An-225", "en:Antonov An-225 Mriya"]},
-    {"id": "787", "titulo": "Boeing 787: el avión de plástico", "fuentes": ["es:Boeing 787", "en:Boeing 787 Dreamliner"]},
-    {"id": "contrails", "titulo": "Qué son las estelas blancas de los aviones", "fuentes": ["es:Estela de condensación", "en:Contrail"]}
+    {
+      "id": "boeing-airbus",
+      "titulo": "Boeing contra Airbus: la guerra de los cielos",
+      "fuentes": [
+        "es:Competencia entre Airbus y Boeing",
+        "en:Competition between Airbus and Boeing"
+      ],
+      "partes": [
+        "Cómo empezó la guerra entre Boeing y Airbus",
+        "Quién va ganando hoy y por qué"
+      ]
+    },
+    {
+      "id": "a320-737",
+      "titulo": "Airbus A320 contra Boeing 737",
+      "fuentes": [
+        "en:Airbus A320 family",
+        "en:Boeing 737"
+      ]
+    },
+    {
+      "id": "a380",
+      "titulo": "Por qué fracasó el Airbus A380, el avión más grande",
+      "fuentes": [
+        "es:Airbus A380",
+        "en:Airbus A380"
+      ]
+    },
+    {
+      "id": "747",
+      "titulo": "Boeing 747: la reina de los cielos",
+      "fuentes": [
+        "es:Boeing 747",
+        "en:Boeing 747"
+      ]
+    },
+    {
+      "id": "concorde",
+      "titulo": "Concorde: por qué ya no volamos supersónicos",
+      "fuentes": [
+        "es:Concorde",
+        "en:Concorde"
+      ]
+    },
+    {
+      "id": "cajanegra",
+      "titulo": "Cómo funciona de verdad una caja negra (y por qué es naranja)",
+      "fuentes": [
+        "es:Registrador de vuelo",
+        "en:Flight recorder"
+      ]
+    },
+    {
+      "id": "crucero",
+      "titulo": "Por qué los aviones vuelan tan alto",
+      "fuentes": [
+        "en:Cruise (aeronautics)",
+        "es:Altitud de crucero"
+      ]
+    },
+    {
+      "id": "autopiloto",
+      "titulo": "El piloto automático: qué hace y qué no",
+      "fuentes": [
+        "es:Piloto automático",
+        "en:Autopilot"
+      ]
+    },
+    {
+      "id": "etops",
+      "titulo": "ETOPS: por qué un avión de dos motores puede cruzar el océano",
+      "fuentes": [
+        "en:ETOPS"
+      ]
+    },
+    {
+      "id": "controlaereo",
+      "titulo": "Cómo funciona el control aéreo",
+      "fuentes": [
+        "es:Control del tráfico aéreo",
+        "en:Air traffic control"
+      ]
+    },
+    {
+      "id": "an225",
+      "titulo": "Antonov An-225: el avión más grande que ha existido",
+      "fuentes": [
+        "es:Antonov An-225",
+        "en:Antonov An-225 Mriya"
+      ]
+    },
+    {
+      "id": "787",
+      "titulo": "Boeing 787: el avión de plástico",
+      "fuentes": [
+        "es:Boeing 787",
+        "en:Boeing 787 Dreamliner"
+      ]
+    },
+    {
+      "id": "contrails",
+      "titulo": "Qué son las estelas blancas de los aviones",
+      "fuentes": [
+        "es:Estela de condensación",
+        "en:Contrail"
+      ]
+    }
   ],
   "legendarios": [
-    {"id": "sr71", "titulo": "SR-71 Blackbird: más rápido que un misil", "fuentes": ["es:Lockheed SR-71 Blackbird", "en:Lockheed SR-71 Blackbird"]},
-    {"id": "f35-ef", "titulo": "F-35 contra Eurofighter", "fuentes": ["en:Lockheed Martin F-35 Lightning II", "en:Eurofighter Typhoon"], "partes": ["El F-35: el caza más caro de la historia", "El Eurofighter: el caza europeo"], "partes_fuentes": [["es:Lockheed Martin F-35 Lightning II", "en:Lockheed Martin F-35 Lightning II"], ["es:Eurofighter Typhoon", "en:Eurofighter Typhoon"]]},
-    {"id": "harrier", "titulo": "Harrier: el avión que despega en vertical", "fuentes": ["es:Hawker Siddeley Harrier", "en:Hawker Siddeley Harrier"]},
-    {"id": "osprey", "titulo": "V-22 Osprey: mitad avión, mitad helicóptero", "fuentes": ["es:Bell-Boeing V-22 Osprey", "en:Bell Boeing V-22 Osprey"]},
-    {"id": "chinook", "titulo": "CH-47 Chinook: el helicóptero que no se jubila", "fuentes": ["es:Boeing CH-47 Chinook", "en:Boeing CH-47 Chinook"]},
-    {"id": "apache", "titulo": "AH-64 Apache: el helicóptero de ataque", "fuentes": ["es:AH-64 Apache", "en:Boeing AH-64 Apache"]},
-    {"id": "a10", "titulo": "A-10 Warthog: un avión construido alrededor de un cañón", "fuentes": ["es:Fairchild-Republic A-10 Thunderbolt II", "en:Fairchild Republic A-10 Thunderbolt II"]},
-    {"id": "c130", "titulo": "C-130 Hercules: 70 años volando", "fuentes": ["es:Lockheed C-130 Hercules", "en:Lockheed C-130 Hercules"]},
-    {"id": "b2", "titulo": "B-2 Spirit: el avión invisible", "fuentes": ["es:Northrop Grumman B-2 Spirit", "en:Northrop Grumman B-2 Spirit"]},
-    {"id": "blackhawk", "titulo": "UH-60 Black Hawk", "fuentes": ["es:Sikorsky UH-60 Black Hawk", "en:Sikorsky UH-60 Black Hawk"]}
+    {
+      "id": "sr71",
+      "titulo": "SR-71 Blackbird: más rápido que un misil",
+      "fuentes": [
+        "es:Lockheed SR-71 Blackbird",
+        "en:Lockheed SR-71 Blackbird"
+      ]
+    },
+    {
+      "id": "f35-ef",
+      "titulo": "F-35 contra Eurofighter",
+      "fuentes": [
+        "en:Lockheed Martin F-35 Lightning II",
+        "en:Eurofighter Typhoon"
+      ],
+      "partes": [
+        "El F-35: el caza más caro de la historia",
+        "El Eurofighter: el caza europeo"
+      ],
+      "partes_fuentes": [
+        [
+          "es:Lockheed Martin F-35 Lightning II",
+          "en:Lockheed Martin F-35 Lightning II"
+        ],
+        [
+          "es:Eurofighter Typhoon",
+          "en:Eurofighter Typhoon"
+        ]
+      ]
+    },
+    {
+      "id": "harrier",
+      "titulo": "Harrier: el avión que despega en vertical",
+      "fuentes": [
+        "es:Hawker Siddeley Harrier",
+        "en:Hawker Siddeley Harrier"
+      ]
+    },
+    {
+      "id": "osprey",
+      "titulo": "V-22 Osprey: mitad avión, mitad helicóptero",
+      "fuentes": [
+        "es:Bell-Boeing V-22 Osprey",
+        "en:Bell Boeing V-22 Osprey"
+      ]
+    },
+    {
+      "id": "chinook",
+      "titulo": "CH-47 Chinook: el helicóptero que no se jubila",
+      "fuentes": [
+        "es:Boeing CH-47 Chinook",
+        "en:Boeing CH-47 Chinook"
+      ]
+    },
+    {
+      "id": "apache",
+      "titulo": "AH-64 Apache: el helicóptero de ataque",
+      "fuentes": [
+        "es:AH-64 Apache",
+        "en:Boeing AH-64 Apache"
+      ]
+    },
+    {
+      "id": "a10",
+      "titulo": "A-10 Warthog: un avión construido alrededor de un cañón",
+      "fuentes": [
+        "es:Fairchild-Republic A-10 Thunderbolt II",
+        "en:Fairchild Republic A-10 Thunderbolt II"
+      ]
+    },
+    {
+      "id": "c130",
+      "titulo": "C-130 Hercules: 70 años volando",
+      "fuentes": [
+        "es:Lockheed C-130 Hercules",
+        "en:Lockheed C-130 Hercules"
+      ]
+    },
+    {
+      "id": "b2",
+      "titulo": "B-2 Spirit: el avión invisible",
+      "fuentes": [
+        "es:Northrop Grumman B-2 Spirit",
+        "en:Northrop Grumman B-2 Spirit"
+      ]
+    },
+    {
+      "id": "blackhawk",
+      "titulo": "UH-60 Black Hawk",
+      "fuentes": [
+        "es:Sikorsky UH-60 Black Hawk",
+        "en:Sikorsky UH-60 Black Hawk"
+      ]
+    }
   ],
   "supervivencia": [
-    {"id": "hudson", "titulo": "El milagro del Hudson", "fuentes": ["es:Vuelo 1549 de US Airways", "en:US Airways Flight 1549"]},
-    {"id": "gimli", "titulo": "Gimli Glider: un 767 sin combustible", "fuentes": ["es:Vuelo 143 de Air Canada", "en:Air Canada Flight 143"]},
-    {"id": "ba9", "titulo": "British Airways 9: cuatro motores apagados por un volcán", "fuentes": ["es:Vuelo 9 de British Airways", "en:British Airways Flight 9"]},
-    {"id": "aloha243", "titulo": "Aloha 243: volar sin techo", "fuentes": ["es:Vuelo 243 de Aloha Airlines", "en:Aloha Airlines Flight 243"]},
-    {"id": "airtransat236", "titulo": "Air Transat 236: planear 120 kilómetros sobre el Atlántico", "fuentes": ["es:Vuelo 236 de Air Transat", "en:Air Transat Flight 236"]},
-    {"id": "qantas32", "titulo": "Qantas 32: el A380 que explotó en el aire y aterrizó", "fuentes": ["es:Vuelo 32 de Qantas", "en:Qantas Flight 32"]},
-    {"id": "ba5390", "titulo": "British Airways 5390: el comandante que salió por la ventana", "fuentes": ["es:Vuelo 5390 de British Airways", "en:British Airways Flight 5390"]}
+    {
+      "id": "andes571",
+      "titulo": "Los Andes 1972: 72 días en la montaña",
+      "fuentes": [
+        "es:Vuelo 571 de la Fuerza Aérea Uruguaya",
+        "en:Uruguayan Air Force Flight 571"
+      ]
+    },
+    {
+      "id": "hudson",
+      "titulo": "El milagro del Hudson",
+      "fuentes": [
+        "es:Vuelo 1549 de US Airways",
+        "en:US Airways Flight 1549"
+      ]
+    },
+    {
+      "id": "gimli",
+      "titulo": "Gimli Glider: un 767 sin combustible",
+      "fuentes": [
+        "es:Vuelo 143 de Air Canada",
+        "en:Air Canada Flight 143"
+      ]
+    },
+    {
+      "id": "ba9",
+      "titulo": "British Airways 9: cuatro motores apagados por un volcán",
+      "fuentes": [
+        "es:Vuelo 9 de British Airways",
+        "en:British Airways Flight 9"
+      ]
+    },
+    {
+      "id": "aloha243",
+      "titulo": "Aloha 243: volar sin techo",
+      "fuentes": [
+        "es:Vuelo 243 de Aloha Airlines",
+        "en:Aloha Airlines Flight 243"
+      ]
+    },
+    {
+      "id": "airtransat236",
+      "titulo": "Air Transat 236: planear 120 kilómetros sobre el Atlántico",
+      "fuentes": [
+        "es:Vuelo 236 de Air Transat",
+        "en:Air Transat Flight 236"
+      ]
+    },
+    {
+      "id": "qantas32",
+      "titulo": "Qantas 32: el A380 que explotó en el aire y aterrizó",
+      "fuentes": [
+        "es:Vuelo 32 de Qantas",
+        "en:Qantas Flight 32"
+      ]
+    },
+    {
+      "id": "ba5390",
+      "titulo": "British Airways 5390: el comandante que salió por la ventana",
+      "fuentes": [
+        "es:Vuelo 5390 de British Airways",
+        "en:British Airways Flight 5390"
+      ]
+    }
   ]
 }
