@@ -2,8 +2,8 @@ name: Video diario
 
 on:
   schedule:
-    - cron: "0 2 * * *"
-    - cron: "0 14 * * *"
+    - cron: "17 1 * * *"
+    - cron: "17 13 * * *"
   workflow_dispatch:
     inputs:
       prueba:
