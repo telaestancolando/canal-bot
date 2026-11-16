@@ -2,8 +2,8 @@
   "canal": "Cabina Abierta",
   "usuario_instagram": "@cabinaabierta.aviacion",
   "eslogan": "Aviones y helicópteros explicados desde dentro",
-  "voz_a": "es-ES-AlvaroNeural",
-  "voz_b": "es-ES-AlvaroNeural",
+  "voz_a": "es-MX-JorgeNeural",
+  "voz_b": "es-MX-JorgeNeural",
   "modelo_gemini": "gemini-flash-latest",
   "version_api_instagram": "v23.0",
   "dias_atras_boe": 3,
@@ -19,7 +19,12 @@
     "nudo_en_kmh": 1.852,
     "milla_nautica_en_km": 1.852,
     "milla_en_km": 1.609,
-    "libra_en_kg": 0.4536
+    "libra_en_kg": 0.4536,
+    "metro_en_pies": 3.2808,
+    "kmh_en_nudos": 0.54,
+    "km_en_millas_nauticas": 0.54,
+    "kg_en_libras": 2.2046,
+    "km_en_millas": 0.6214
   },
   "palabras_clave_boe": [
     "subvención",

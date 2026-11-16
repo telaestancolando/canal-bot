@@ -118,13 +118,18 @@ NORMAS (obligatorias):
 - Cifras con dígitos y formato español (1.250 metros, 3,5 toneladas). Si conviertes unidades
   (pies a metros, nudos a km/h) pon la operación en "calculos" usando solo cifras de las
   fuentes y estas constantes: {constantes}. En la narración di "unos" o "aproximadamente".
-- Narrador único, hombre. Tono de piloto veterano que te lo cuenta tomando un café:
-  cercano, apasionado, preciso, con alguna frase con gracia. Nada de "en este vídeo
-  vamos a ver", nada de saludos, nada de frases de relleno.
+- Narrador único, hombre. Tono de buen documental contado de tú a tú: cercano, natural,
+  seguro y preciso. Serio pero no frío. No intentes ser gracioso ni "guay": nada de jerga
+  juvenil, exclamaciones exageradas, frikismo ni frases de youtuber. Nada de "en este vídeo
+  vamos a ver", nada de saludos, nada de frases de relleno. El interés lo ponen los datos
+  y la historia, no el tono.
 - Accidentes: respeto absoluto a las víctimas, sin morbo ni detalles escabrosos, sin
   especular. Las causas, solo las que recoge la investigación oficial según las fuentes.
 - No hagas preguntas al público tipo concurso ni le pidas que elija opciones.
 - Habla de aviones y técnica; no opines de política.
+- El público es España y toda Latinoamérica: español neutro que se entienda en todos los
+  países, sin expresiones solo de España (nada de "vale", "guay", "flipar", "vosotros").
+  Da las distancias en kilómetros y metros, y la altitud también en pies.
 """
 
 
