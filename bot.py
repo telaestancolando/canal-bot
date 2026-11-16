@@ -109,7 +109,7 @@ def candidatos():
     base = fecha_historica()
     if base:
         log("Repaso histórico: BOE alrededor de", base)
-        fechas = [base + dt.timedelta(days=k) for k in range(0, 21, 2)]  # unas tres semanas de BOE
+        fechas = [base + dt.timedelta(days=k) for k in range(0, 42, 2)]  # unas seis semanas de BOE
     else:
         hoy = dt.date.today()
         fechas = [hoy - dt.timedelta(days=d) for d in range(CFG["dias_atras_boe"] + 1)]
@@ -120,9 +120,15 @@ def candidatos():
             ident = it.get("identificador", t)
             if ident in usados:
                 continue
-            if any(k in t.lower() for k in claves):
-                lista.append({"id": ident, "titulo": t, "item": it})
-    log(f"{len(lista)} candidatos en el BOE")
+            tl = t.lower()
+            if any(x.lower() in tl for x in CFG.get("excluir_boe", [])):
+                continue
+            if any(k in tl for k in claves):
+                # prioridad: dinero que sale fuera o va a entidades (lo que más indigna)
+                prio = sum(1 for k in CFG.get("prioridad_boe", []) if k.lower() in tl)
+                lista.append({"id": ident, "titulo": t, "item": it, "prio": prio})
+    lista.sort(key=lambda c: -c["prio"])
+    log(f"{len(lista)} candidatos en el BOE ({sum(1 for c in lista if c['prio'])} prioritarios)")
     return lista[:80]
 
 
@@ -222,8 +228,14 @@ def elegir_tema(cands):
 Gobierno que más indignación genere (corrupción, contratos, enchufes, mentiras, despilfarro).
 Descarta sucesos sobre personas particulares."""
     else:
-        criterio = """De esta lista del BOE, elige la disposición que más indignación o curiosidad
-genere al contribuyente (cuantía alta, destino llamativo, gasto exterior, etc.) y que tenga importe."""
+        criterio = """De esta lista del BOE, elige la disposición con importe que MÁS indigne al
+contribuyente medio porque la considere prescindible, ideológica o un regalo: ayudas y
+cooperación con otros países (p. ej. 1,5 millones para proyectos en un país lejano),
+subvenciones directas a fundaciones, asociaciones, ONG, sindicatos o entidades afines,
+propaganda y campañas institucionales, observatorios, chiringuitos, viajes y gastos de
+representación. DESCARTA el gasto que la gente ve necesario: defensa, seguridad,
+sanidad, infraestructuras, pensiones, emergencias, educación básica. Entre dos
+opciones, prefiere la de destino más sorprendente frente a la de cuantía más alta."""
     p = f"""Eres el editor de un canal crítico con el Gobierno de España.
 {criterio}
 {lista}
@@ -307,6 +319,10 @@ def verificar(g, texto):
         if v is not None:
             fuente.add(v)
         fuente.add(float(digitos(n) or 0))
+        try:  # formato inglés (1,250.5) por si la fuente está en inglés
+            fuente.add(float(n.replace(",", "")))
+        except ValueError:
+            pass
     fuente |= {float(v) for v in CFG["constantes"].values()}
     calculados = []
     for c in g.get("calculos", []):
@@ -421,7 +437,7 @@ def pintar(escena, g, destino, ancho, alto, subtitulo=None):
     ax.set_ylim(0, 1)
     ax.axis("off")
     ax.add_patch(plt.Rectangle((0, 0.965), 1, 0.035, color=c["acento"]))
-    ax.text(0.03, 0.982, CFG["canal"].upper(), color=c["fondo"], fontproperties=bold,
+    ax.text(0.03, 0.982, CFG["canal"].upper(), color="#FFFFFF", fontproperties=bold,
             fontsize=22 * esc, va="center")
     rot = escena.get("rotulo", "")
     import textwrap
@@ -472,7 +488,7 @@ def pintar(escena, g, destino, ancho, alto, subtitulo=None):
         marcados = set(g["paises"])
         for f in mundo()["features"]:
             iso = f["properties"].get("ADM0_A3")
-            col = c["rojo"] if iso in marcados else "#2A3F5F"
+            col = c["rojo"] if iso in marcados else "#B9CCDD"
             geo = f["geometry"]
             polis = geo["coordinates"] if geo["type"] == "MultiPolygon" else [geo["coordinates"]]
             for pol in polis:
@@ -487,7 +503,7 @@ def pintar(escena, g, destino, ancho, alto, subtitulo=None):
         for k, op in enumerate(ops):
             y = (0.6 if vertical else 0.62) - k * (0.11 if vertical else 0.15)
             ax.add_patch(plt.Rectangle((0.15, y - 0.04), 0.7, 0.08 if vertical else 0.1,
-                                       color="#1F3A5F", ec=c["acento"], lw=3))
+                                       color="#FFFFFF", ec=c["acento"], lw=3))
             t = ax.text(0.5, y + (0.0 if vertical else 0.01), op, color=c["texto"], fontproperties=bold,
                         fontsize=40 * esc, ha="center", va="center")
             ajustar(t, 0.65, 0.07)

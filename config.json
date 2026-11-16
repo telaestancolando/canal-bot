@@ -1,21 +1,25 @@
 {
-  "canal": "Tu Dinero, Su Fiesta",
-  "usuario_instagram": "@tudinerosufiesta",
-  "eslogan": "Subvenciones y escándalos",
+  "canal": "Cabina Abierta",
+  "usuario_instagram": "@cabinaabierta.aviacion",
+  "eslogan": "Aviones y helicópteros explicados desde dentro",
   "voz_a": "es-ES-AlvaroNeural",
-  "voz_b": "es-ES-ElviraNeural",
+  "voz_b": "es-ES-AlvaroNeural",
   "modelo_gemini": "gemini-flash-latest",
   "version_api_instagram": "v23.0",
   "dias_atras_boe": 3,
   "colores": {
-    "fondo": "#0B1F3A",
-    "acento": "#F2B705",
-    "rojo": "#D7263D",
-    "texto": "#FFFFFF",
-    "suave": "#C9D3E3"
+    "fondo": "#EEF6FC",
+    "acento": "#E8772E",
+    "rojo": "#D64545",
+    "texto": "#14365A",
+    "suave": "#6B87A3"
   },
   "constantes": {
-    "poblacion_espana": 49000000
+    "pie_en_metros": 0.3048,
+    "nudo_en_kmh": 1.852,
+    "milla_nautica_en_km": 1.852,
+    "milla_en_km": 1.609,
+    "libra_en_kg": 0.4536
   },
   "palabras_clave_boe": [
     "subvención",
@@ -26,10 +30,11 @@
     "convenio",
     "contrato",
     "cooperación",
-    "fondo",
-    "euros"
+    "aportación",
+    "contribución voluntaria",
+    "financiación"
   ],
-  "hashtags": "#tudinerosufiesta #gobierno #dineropublico #corrupcion #subvenciones #impuestos #españa #politica",
+  "hashtags": "#aviacion #aviones #helicopteros #pilotos #avgeek #cabinaabierta",
   "youtube_auditado": false,
   "calendario": [
     "dinero",
@@ -75,13 +80,73 @@
     "okupa",
     "impuesto"
   ],
-  "repaso_historico": {
-    "inicio_gobierno": "2018-06-02",
-    "repaso_desde": "2026-11-16",
-    "repaso_hasta": "2026-11-27"
-  },
-  "dias_sin_publicar": [
-    "2026-11-28",
-    "2026-11-29"
+  "prioridad_boe": [
+    "cooperación internacional",
+    "AECID",
+    "cooperación para el desarrollo",
+    "contribución voluntaria",
+    "organismo internacional",
+    "Naciones Unidas",
+    "África",
+    "América Latina",
+    "Iberoamérica",
+    "Asia",
+    "fundación",
+    "asociación",
+    "organizaciones no gubernamentales",
+    "sindicales",
+    "empresariales",
+    "igualdad",
+    "género",
+    "memoria democrática",
+    "observatorio",
+    "campaña",
+    "publicidad institucional",
+    "Agenda 2030",
+    "diversidad",
+    "cooperación al desarrollo"
+  ],
+  "excluir_boe": [
+    "Defensa",
+    "Armada",
+    "Ejército",
+    "Fuerzas Armadas",
+    "Guardia Civil",
+    "Policía",
+    "Sanidad",
+    "hospital",
+    "carretera",
+    "ferrocarril",
+    "autovía",
+    "emergencia",
+    "pensiones",
+    "nombramiento",
+    "oposiciones",
+    "becas"
+  ],
+  "modo_canal": "aviacion",
+  "calendario_aviacion": [
+    "accidente",
+    {
+      "manana": "general",
+      "tarde": "legendarios"
+    },
+    "aerodinamica",
+    {
+      "manana": "general",
+      "tarde": "supervivencia"
+    },
+    {
+      "manana": "legendarios",
+      "tarde": "general"
+    },
+    {
+      "manana": "supervivencia",
+      "tarde": "general"
+    },
+    {
+      "manana": "general",
+      "tarde": "legendarios"
+    }
   ]
 }
