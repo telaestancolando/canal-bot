@@ -168,28 +168,60 @@ def texto_articulo(link):
 
 
 # ---------------------------------------------------------------- 2. Gemini
+def extraer_json(txt):
+    txt = txt.strip()
+    if txt.startswith("```"):
+        txt = txt.strip("`")
+        txt = txt[txt.find("{"):]
+    return json.loads(txt[txt.find("{"):txt.rfind("}") + 1])
+
+
+def llm_respaldo(prompt):
+    """Respaldo gratuito y sin clave (Pollinations) cuando se agota el cupo de Gemini."""
+    cabeceras = {"Content-Type": "application/json"}
+    clave = os.environ.get("POLLINATIONS_TOKEN", "").strip()
+    if clave:
+        cabeceras["Authorization"] = f"Bearer {clave}"
+    body = {"model": "openai", "temperature": 0.7,
+            "messages": [{"role": "system", "content": "Responde únicamente con un objeto JSON válido, sin texto adicional."},
+                         {"role": "user", "content": prompt}],
+            "response_format": {"type": "json_object"}}
+    for intento in range(4):
+        try:
+            r = requests.post("https://text.pollinations.ai/openai", json=body, headers=cabeceras, timeout=300)
+            if r.status_code == 200:
+                return extraer_json(r.json()["choices"][0]["message"]["content"])
+            log("Respaldo LLM", r.status_code, r.text[:160])
+        except Exception as ex:
+            log("Respaldo LLM falló:", str(ex)[:160])
+        time.sleep(20 * (intento + 1))
+    raise RuntimeError("Ningún modelo de IA responde")
+
+
 def gemini(prompt):
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 0.7},
     }
-    # Plan gratuito: si un modelo da 429 (cupo) o tarda demasiado, se pasa al siguiente
-    modelos = [CFG["modelo_gemini"], "gemini-flash-lite-latest", CFG["modelo_gemini"], "gemini-flash-lite-latest"]
-    for intento, modelo in enumerate(modelos):
+    # Plan gratuito: si un modelo da 429 (cupo) o tarda demasiado, se pasa al siguiente.
+    # Si el cupo DIARIO está agotado, se salta directamente al respaldo.
+    for modelo in [CFG["modelo_gemini"], "gemini-flash-lite-latest"]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
-        try:
-            r = requests.post(url, json=body, timeout=300,
-                              headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
-            if r.status_code == 200:
-                txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                return json.loads(txt)
-            log("Gemini", modelo, r.status_code, r.text[:160])
-            espera = 65 if r.status_code == 429 else 15
-        except (requests.exceptions.RequestException, KeyError, ValueError) as ex:
-            log("Gemini", modelo, "falló:", str(ex)[:160])
-            espera = 10
-        time.sleep(espera)
-    raise RuntimeError("Gemini no responde (posible cupo diario agotado)")
+        for intento in range(2):
+            try:
+                r = requests.post(url, json=body, timeout=300,
+                                  headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
+                if r.status_code == 200:
+                    return extraer_json(r.json()["candidates"][0]["content"]["parts"][0]["text"])
+                log("Gemini", modelo, r.status_code, r.text[:160])
+                if r.status_code == 429 and "PerDay" in r.text:
+                    break  # cupo diario de este modelo agotado: siguiente modelo
+                time.sleep(65 if r.status_code == 429 else 15)
+            except (requests.exceptions.RequestException, KeyError, ValueError) as ex:
+                log("Gemini", modelo, "falló:", str(ex)[:160])
+                time.sleep(10)
+    log("Gemini sin cupo: uso el modelo de respaldo")
+    return llm_respaldo(prompt)
 
 
 NORMAS = """
