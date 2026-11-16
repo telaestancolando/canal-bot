@@ -188,6 +188,20 @@ natural invitando a seguir el canal. La última es "cierre": {'el gancho de la p
     return bot.gemini(p)
 
 
+def corregir_guion(g, error, texto):
+    """En vez de reescribir todo (gasta cupo), se pide arreglar solo las cifras sin respaldo."""
+    p = f"""Este guion (JSON) tiene cifras que NO aparecen en las fuentes: {error}
+Corrígelo: elimina esas cifras o cámbialas por otras que SÍ estén en las fuentes, sin tocar nada
+más. Si una cifra viene de una conversión de unidades, pon la operación en "calculos" usando solo
+cifras de las fuentes y estas constantes: {json.dumps(CFG['constantes'])}.
+Devuelve el JSON completo corregido, con la misma estructura.
+GUION:
+{json.dumps(g, ensure_ascii=False)}
+FUENTES:
+{texto[:20000]}"""
+    return bot.gemini(p)
+
+
 # ---------------------------------------------------------------- Visuales extra
 _pintar_original = bot.pintar
 
@@ -273,6 +287,20 @@ def verificar_av(g, texto):
     bot.verificar(h, texto)
 
 
+def hacer_historia(corto, destino):
+    """Story de 15 s: el arranque del corto con un aviso arriba para ir al perfil."""
+    import subprocess
+    fuente = bot.fuente_tipo("Black")
+    texto = "NUEVO VÍDEO - MÍRALO EN EL PERFIL"
+    vf = (f"drawbox=x=0:y=120:w=iw:h=150:color=0xE8772E@0.95:t=fill,"
+          f"drawtext=fontfile='{fuente}':text='{texto}':fontcolor=white:fontsize=52:"
+          f"x=(w-text_w)/2:y=120+(150-text_h)/2")
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(corto), "-t", "15", "-vf", vf,
+                    "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                    "-movflags", "+faststart", str(destino)], check=True)
+    return destino
+
+
 # ---------------------------------------------------------------- Principal
 def main():
     estado = leer_estado()
@@ -283,8 +311,8 @@ def main():
     if len(texto) < 1500:
         raise RuntimeError(f"Fuentes insuficientes para {tema['id']}")
     ultimo = None
-    for _ in range(3):
-        g = escribir_guion(categoria, tema, parte, total, texto, urls)
+    g = escribir_guion(categoria, tema, parte, total, texto, urls)
+    for intento in range(3):
         for e in g["escenas"]:
             e["locutor"] = "A"  # siempre voz masculina
         try:
@@ -292,7 +320,9 @@ def main():
             break
         except ValueError as ex:
             ultimo = ex
-            log("Verificación fallida, reescribiendo:", ex)
+            log("Verificación fallida, corrigiendo solo esas cifras:", ex)
+            if intento < 2:
+                g = corregir_guion(g, str(ex), texto)
     else:
         raise RuntimeError(f"No publico: {ultimo}")
     bot.SALIDA.mkdir(exist_ok=True)
@@ -310,23 +340,38 @@ def main():
                    f"📚 Fuentes:\n{fuentes_txt}\n\n🔔 Dos vídeos de aviación cada día.\n"
                    f"📲 Instagram: {CFG['usuario_instagram']}\n\n{tags_h} {CFG['hashtags']}")
     tags_yt = (g.get("palabras_clave", []) + g.get("tags", []))[:20]
-    caption = (f"{g['titulo_post']}\n\n{g['texto_post']}{siguiente}\n\n💬 {pregunta}\n\n"
+    anterior = "\n⏪ ¿Te perdiste la parte 1? La tienes justo antes en el perfil." if parte > 1 else ""
+    caption = (f"{g['titulo_post']}\n\n{g['texto_post']}{siguiente}{anterior}\n\n💬 {pregunta}\n\n"
                f"{tags_h} {CFG['hashtags']}")
     textos = bot.SALIDA / "textos_youtube.txt"
     textos.write_text(f"TITULO:\n{g['titulo_youtube']}\n\nDESCRIPCION:\n{descripcion}\n\n"
                       f"TITULO SHORT:\n{g['titulo_post'][:85]} #Shorts\n\nTEXTO INSTAGRAM:\n{caption}\n", encoding="utf-8")
     etiqueta = f"{dt.date.today():%Y%m%d}-{turno()}-{int(time.time())}"
-    adjuntos = [corto, largo, bot.SALIDA / "miniatura.png", textos]
+    historia = hacer_historia(corto, bot.SALIDA / "historia.mp4")
+    adjuntos = [corto, largo, bot.SALIDA / "miniatura.png", textos, historia]
     video_url = bot.url_publica(adjuntos, etiqueta)
+    historia_url = video_url.rsplit("/", 1)[0] + "/historia.mp4"
+    media_id = None
     if os.environ.get("IG_TOKEN"):
-        bot.subir_instagram(video_url, caption)
+        media_id = bot.subir_instagram(video_url, caption)
+        # Parte 2: avisar en la publicación de la parte 1
+        p1 = (estado.get("pendiente") or {}).get("ig_parte1")
+        if parte > 1 and p1:
+            try:
+                bot.comentar_instagram(p1, f"🎬 ¡La parte {parte} ya está publicada! La tienes en el perfil 👉 {CFG['usuario_instagram']}")
+            except Exception as ex:
+                log("No se pudo comentar la parte 1:", ex)
+        try:  # Story con el arranque del vídeo para llevar gente al Reel
+            bot.subir_instagram(historia_url, "", media_type="STORIES")
+        except Exception as ex:
+            log("No se pudo publicar la story:", ex)
     if CFG.get("youtube_auditado"):
         yt = bot.youtube()
         bot.subir_youtube(yt, largo, g["titulo_youtube"], descripcion, tags_yt, bot.SALIDA / "miniatura.png")
         bot.subir_youtube(yt, corto, f"{g['titulo_post'][:85]} #Shorts", descripcion, tags_yt)
     # actualizar estado
     if parte < total:
-        estado["pendiente"] = {"categoria": categoria, "id": tema["id"], "parte": parte + 1}
+        estado["pendiente"] = {"categoria": categoria, "id": tema["id"], "parte": parte + 1, "ig_parte1": media_id}
     else:
         estado["pendiente"] = None
         estado["usados"].append(tema["id"])

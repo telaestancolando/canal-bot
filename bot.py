@@ -171,23 +171,25 @@ def texto_articulo(link):
 def gemini(prompt):
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.8},
+        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.7},
     }
-    # Si el modelo principal tarda o falla, se prueba con el ligero (más rápido)
-    modelos = [CFG["modelo_gemini"], CFG["modelo_gemini"], "gemini-flash-lite-latest", "gemini-flash-lite-latest"]
+    # Plan gratuito: si un modelo da 429 (cupo) o tarda demasiado, se pasa al siguiente
+    modelos = [CFG["modelo_gemini"], "gemini-flash-lite-latest", CFG["modelo_gemini"], "gemini-flash-lite-latest"]
     for intento, modelo in enumerate(modelos):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
         try:
-            r = requests.post(url, json=body, timeout=360,
+            r = requests.post(url, json=body, timeout=300,
                               headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
             if r.status_code == 200:
                 txt = r.json()["candidates"][0]["content"]["parts"][0]["text"]
                 return json.loads(txt)
-            log("Gemini", modelo, r.status_code, r.text[:300])
+            log("Gemini", modelo, r.status_code, r.text[:160])
+            espera = 65 if r.status_code == 429 else 15
         except (requests.exceptions.RequestException, KeyError, ValueError) as ex:
-            log("Gemini", modelo, "falló:", ex)
-        time.sleep(20 * (intento + 1))
-    raise RuntimeError("Gemini no responde")
+            log("Gemini", modelo, "falló:", str(ex)[:160])
+            espera = 10
+        time.sleep(espera)
+    raise RuntimeError("Gemini no responde (posible cupo diario agotado)")
 
 
 NORMAS = """
@@ -660,7 +662,7 @@ def renovar_token_ig(token):
     return token
 
 
-def subir_instagram(video_url, caption):
+def subir_instagram(video_url, caption, media_type="REELS"):
     token = os.environ["IG_TOKEN"].strip()
     if token.startswith("EAA"):
         # Token de usuario del sistema (inicio de sesión unificado): no caduca, va por graph.facebook.com
@@ -674,9 +676,10 @@ def subir_instagram(video_url, caption):
         yo = requests.get(f"{base}/me", params={"fields": "user_id,username", "access_token": token},
                           timeout=60).json()
         uid = yo.get("user_id") or yo["id"]
-    r = requests.post(f"{base}/{uid}/media", data={
-        "media_type": "REELS", "video_url": video_url, "caption": caption[:2200],
-        "share_to_feed": "true", "access_token": token}, timeout=120).json()
+    datos = {"media_type": media_type, "video_url": video_url, "access_token": token}
+    if media_type == "REELS":
+        datos.update({"caption": caption[:2200], "share_to_feed": "true"})
+    r = requests.post(f"{base}/{uid}/media", data=datos, timeout=120).json()
     if "id" not in r:
         raise RuntimeError(f"Instagram contenedor: {r}")
     cid = r["id"]
@@ -691,6 +694,16 @@ def subir_instagram(video_url, caption):
     pub = requests.post(f"{base}/{uid}/media_publish",
                         data={"creation_id": cid, "access_token": token}, timeout=120).json()
     log("Instagram publicado:", pub)
+    return pub.get("id")
+
+
+def comentar_instagram(media_id, mensaje):
+    """Deja un comentario del propio canal en una publicación suya (p. ej. aviso de la parte 2)."""
+    token = os.environ["IG_TOKEN"].strip()
+    base = (f"https://graph.facebook.com/{CFG['version_api_instagram']}" if token.startswith("EAA")
+            else f"https://graph.instagram.com/{CFG['version_api_instagram']}")
+    r = requests.post(f"{base}/{media_id}/comments", data={"message": mensaje, "access_token": token}, timeout=60)
+    log("Comentario en Instagram:", r.status_code, r.text[:200])
 
 
 # ---------------------------------------------------------------- Principal
