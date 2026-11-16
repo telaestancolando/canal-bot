@@ -261,7 +261,8 @@ Devuelve JSON:
  "paises": ["códigos ISO3 de los países implicados, o vacío"],
  "calculos": [{{"operacion": "35000 * 0.3048", "resultado": 10668}}],
  "escenas": [
-   {{"narracion": "...", "visual": "portada", "rotulo": "frase corta", "short": true}},
+   {{"narracion": "...", "visual": "portada", "rotulo": "frase corta", "short": true, "imagen": "English prompt: what the illustration shows", "movimiento": "acercar"}},
+   {{"narracion": "...", "visual": "escena", "rotulo": "frase corta", "imagen": "English prompt...", "movimiento": "derecha"}},
    {{"narracion": "...", "visual": "cifra", "cifra": "583 pasajeros", "rotulo": "...", "short": true}},
    {{"narracion": "...", "visual": "cronologia", "eventos": [{{"hora": "17:01", "texto": "..."}}], "rotulo": "..."}},
    {{"narracion": "...", "visual": "barras", "datos": [{{"etiqueta": "...", "valor": 70}}], "rotulo": "..."}},
@@ -271,6 +272,15 @@ Devuelve JSON:
    {{"narracion": "...", "visual": "cierre", "rotulo": "..."}}
  ]
 }}
+CADA escena lleva "imagen": una descripción EN INGLÉS de la ilustración que acompaña a esa
+frase, como un fotograma de película animada: qué avión o helicóptero (modelo y aerolínea si
+procede), dónde está, qué hace, el tiempo y la luz, el encuadre (plano general, vista desde la
+cabina, desde la torre, cenital...). Que las escenas sigan la historia (rodando por la pista,
+despegando entre la niebla, la torre de control, la cabina de noche...). Sin texto ni letras en
+la imagen. En accidentes: NUNCA víctimas, cuerpos, heridos ni sangre; el impacto se sugiere
+(niebla, humo a lo lejos, luces de emergencia), no se muestra en detalle.
+"movimiento" de cámara: "acercar", "alejar", "derecha" o "izquierda" (hacia donde se mueve el avión).
+Usa "escena" (solo ilustración) en la mayoría de escenas, 60-70 %; el resto, gráficos con datos.
 Visuales: "cronologia" (hasta 5 eventos con hora o fecha) para accidentes; "fuerzas" (perfil de
 ala con sustentación, peso, empuje y resistencia) solo en aerodinámica; "barras" para comparar
 cifras de las fuentes (velocidades, pasajeros, alcance...); "mapa" solo si hay países.
@@ -394,6 +404,209 @@ def hacer_historia(corto, destino):
     return destino
 
 
+# ---------------------------------------------------------------- Vídeo animado con ilustraciones IA
+ESTILO = ("stylized 3D animated film still, aviation scene, soft cinematic lighting, rich but natural colors, "
+          "highly detailed aircraft, depth of field, no text, no letters, no logos, no watermark")
+
+
+def imagen_ia(prompt, destino, ancho, alto, semilla):
+    """Ilustración con Pollinations (gratis). Sin clave: 1 imagen cada ~15 s."""
+    import urllib.parse
+    from PIL import Image
+    url = "https://image.pollinations.ai/prompt/" + urllib.parse.quote(f"{prompt}, {ESTILO}")
+    params = {"width": ancho, "height": alto, "model": "flux", "nologo": "true", "seed": semilla, "safe": "true"}
+    clave = os.environ.get("POLLINATIONS_TOKEN", "").strip()
+    if clave:
+        params["token"] = clave
+    for intento in range(4):
+        try:
+            r = requests.get(url, params=params, timeout=180, headers=UA)
+            if r.status_code == 200 and r.headers.get("content-type", "").startswith("image"):
+                destino.write_bytes(r.content)
+                Image.open(destino).convert("RGB").save(destino)
+                if not clave:
+                    time.sleep(16)
+                return True
+            log("Imagen IA", r.status_code)
+        except Exception as ex:
+            log("Imagen IA falló:", str(ex)[:120])
+        time.sleep(20 * (intento + 1))
+    return False
+
+
+def fondo_respaldo(ancho, alto):
+    from PIL import Image, ImageDraw
+    im = Image.new("RGB", (ancho, alto))
+    d = ImageDraw.Draw(im)
+    for y in range(alto):
+        t = y / alto
+        d.line([(0, y), (ancho, y)], fill=(int(205 + 45 * t), int(228 + 15 * t), int(247 - 10 * t)))
+    return im
+
+
+def fuente_pil(peso, tam):
+    from PIL import ImageFont
+    return ImageFont.truetype(bot.fuente_tipo(peso), int(tam))
+
+
+def texto_con_sombra(d, xy, texto, fuente, relleno="#FFFFFF", anchor="mm"):
+    x, y = xy
+    for dx, dy in ((3, 3), (2, 2)):
+        d.text((x + dx, y + dy), texto, font=fuente, fill=(0, 0, 0, 160), anchor=anchor)
+    d.text((x, y), texto, font=fuente, fill=relleno, anchor=anchor)
+
+
+def componer_base(e, g, img, ancho, alto, tmp):
+    """Fotograma base de la escena (sin subtítulos)."""
+    import textwrap
+    from PIL import Image, ImageDraw, ImageFilter
+    c = CFG["colores"]
+    bg = Image.open(img).convert("RGB") if img and img.exists() else fondo_respaldo(ancho, alto)
+    bg = bg.resize((ancho, alto), Image.LANCZOS)
+    v = e.get("visual", "escena")
+    vertical = alto > ancho
+    if v in ("cifra", "cronologia", "barras", "mapa", "fuerzas"):
+        # gráfico de datos en una tarjeta sobre la ilustración desenfocada
+        fondo = bg.filter(ImageFilter.GaussianBlur(18))
+        fondo = Image.blend(fondo, Image.new("RGB", fondo.size, (255, 255, 255)), 0.25)
+        tarjeta_png = tmp.with_name(tmp.stem + "_tarjeta.png")
+        pintar_av(e, g, tarjeta_png, ancho, alto)
+        tarjeta = Image.open(tarjeta_png).convert("RGB")
+        f = 0.86
+        tw, th = int(ancho * f), int(alto * f)
+        tarjeta = tarjeta.resize((tw, th), Image.LANCZOS)
+        mascara = Image.new("L", (tw, th), 0)
+        ImageDraw.Draw(mascara).rounded_rectangle([0, 0, tw, th], radius=int(28 * ancho / 1920), fill=255)
+        sombra = Image.new("RGBA", fondo.size, (0, 0, 0, 0))
+        ImageDraw.Draw(sombra).rounded_rectangle([(ancho - tw) // 2 + 8, (alto - th) // 2 + 12,
+                                                  (ancho + tw) // 2 + 8, (alto + th) // 2 + 12],
+                                                 radius=int(28 * ancho / 1920), fill=(0, 0, 0, 90))
+        fondo = Image.alpha_composite(fondo.convert("RGBA"), sombra.filter(ImageFilter.GaussianBlur(14)))
+        fondo.paste(tarjeta, ((ancho - tw) // 2, (alto - th) // 2), mascara)
+        return fondo.convert("RGB")
+    # escena ilustrada: imagen a pantalla completa + rótulo arriba
+    lienzo = bg.convert("RGBA")
+    capa = Image.new("RGBA", lienzo.size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(capa)
+    alto_degradado = int(alto * (0.30 if vertical else 0.34))
+    for y in range(alto_degradado):
+        d.line([(0, y), (ancho, y)], fill=(8, 25, 45, int(170 * (1 - y / alto_degradado))))
+    lienzo = Image.alpha_composite(lienzo, capa)
+    d = ImageDraw.Draw(lienzo)
+    esc = ancho / (1080 if vertical else 1920)
+    d.text((int(90 * esc), int(70 * esc)), CFG["canal"].upper(), font=fuente_pil("Bold", 30 * esc),
+           fill=c["acento"], anchor="lm")
+    rot = (e.get("rotulo") or "").upper()
+    if rot:
+        lineas = textwrap.wrap(rot, 16 if vertical else 30)[:3]
+        tam = (78 if v == "portada" else 62) * esc
+        y0 = int(alto * (0.12 if vertical else 0.13))
+        for k, linea in enumerate(lineas):
+            texto_con_sombra(d, (ancho // 2, y0 + int(k * tam * 1.1)), linea, fuente_pil("Black", tam))
+    if v == "cierre":
+        texto_con_sombra(d, (ancho // 2, int(alto * 0.62)), CFG["usuario_instagram"], fuente_pil("Black", 58 * esc),
+                         relleno=c["acento"])
+    return lienzo.convert("RGB")
+
+
+def subtitulo_png(texto, ancho, alto, destino):
+    from PIL import Image, ImageDraw
+    c = CFG["colores"]
+    vertical = alto > ancho
+    esc = ancho / (1080 if vertical else 1920)
+    im = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    f = fuente_pil("Black", (56 if vertical else 46) * esc)
+    while d.textlength(texto, font=f) > ancho * 0.86 and f.size > 20:
+        f = fuente_pil("Black", f.size * 0.92)
+    w = d.textlength(texto, font=f)
+    y = int(alto * (0.78 if vertical else 0.86))
+    pad = int(18 * esc)
+    d.rounded_rectangle([(ancho - w) / 2 - pad, y - f.size * 0.75, (ancho + w) / 2 + pad, y + f.size * 0.75],
+                        radius=int(16 * esc), fill=c["acento"])
+    d.text((ancho / 2, y), texto, font=f, fill="#111111", anchor="mm")
+    im.save(destino)
+
+
+def clip_animado(e, g, mp3, salida, ancho, alto, pref, img, idx):
+    """Ilustración con movimiento de cámara + subtítulos sincronizados por palabras."""
+    import subprocess
+    S = bot.SALIDA
+    d = bot.duracion(mp3) + 0.35
+    frames = int(d * 25)
+    base = S / f"{pref}_base.png"
+    componer_base(e, g, img, ancho, alto, base).save(base)
+    mov = e.get("movimiento") or ["acercar", "derecha", "alejar", "izquierda"][idx % 4]
+    es_dato = e.get("visual") in ("cifra", "cronologia", "barras", "mapa", "fuerzas")
+    zmax = 1.04 if es_dato else 1.15
+    inc = (zmax - 1) / max(frames, 1)
+    if mov == "alejar" and not es_dato:
+        z = f"if(eq(on,0),{zmax},max(zoom-{inc:.6f},1.0))"
+    else:
+        z = f"min(zoom+{inc:.6f},{zmax})"
+    if mov == "derecha" and not es_dato:
+        x = f"(iw-iw/zoom)*on/{frames}"
+    elif mov == "izquierda" and not es_dato:
+        x = f"(iw-iw/zoom)*(1-on/{frames})"
+    else:
+        x = "iw/2-(iw/zoom/2)"
+    filtro = [f"[0:v]scale={ancho * 2}:{alto * 2},zoompan=z='{z}':x='{x}':y='ih/2-(ih/zoom/2)':d={frames}:s={ancho}x{alto}:fps=25[v0]"]
+    entradas = ["-i", base.name]
+    partes = bot.trozos(e["narracion"])
+    total = sum(len(p.split()) for p in partes) or 1
+    t = 0.0
+    for k, parte in enumerate(partes):
+        png = S / f"{pref}_sub{k:02}.png"
+        subtitulo_png(parte, ancho, alto, png)
+        dur = d * len(parte.split()) / total
+        entradas += ["-loop", "1", "-i", png.name]
+        filtro.append(f"[v{k}][{k + 1}:v]overlay=0:0:enable='between(t,{t:.2f},{t + dur:.2f})'[v{k + 1}]")
+        t += dur
+    entradas += ["-i", mp3.name]
+    n_audio = len(partes) + 1
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *entradas, "-filter_complex", ";".join(filtro),
+                    "-map", f"[v{len(partes)}]", "-map", f"{n_audio}:a", "-t", f"{d:.2f}",
+                    "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-c:a", "aac",
+                    "-ar", "44100", "-b:a", "160k", "-af", "apad", salida.name], check=True, cwd=S)
+    return d
+
+
+def montar_animado(g):
+    import random
+    S = bot.SALIDA
+    S.mkdir(exist_ok=True)
+    semilla = random.randint(1, 10_000_000)
+    horiz, vert, capitulos, t = [], [], [], 0.0
+    for i, e in enumerate(g["escenas"]):
+        prompt = e.get("imagen") or "airliner flying above the clouds at sunset"
+        img_h = S / f"ia_h{i:02}.jpg"
+        if not imagen_ia(prompt, img_h, 1344, 768, semilla + i):
+            img_h = None
+        mp3 = S / f"v{i:02}.mp3"
+        bot.voz(e["narracion"], "A", mp3)
+        h = S / f"h{i:02}.mp4"
+        d = clip_animado(e, g, mp3, h, 1920, 1080, f"h{i:02}", img_h, i)
+        horiz.append(h)
+        capitulos.append((t, e.get("rotulo") or e.get("visual", "")))
+        t += d
+        if e.get("short") or e.get("visual") == "cierre":
+            img_v = S / f"ia_v{i:02}.jpg"
+            if not imagen_ia(prompt, img_v, 768, 1344, semilla + i):
+                img_v = None
+            s = S / f"s{i:02}.mp4"
+            clip_animado(e, g, mp3, s, 1080, 1920, f"s{i:02}", img_v, i)
+            vert.append(s)
+    largo, corto = S / "video.mp4", S / "corto.mp4"
+    bot.unir(horiz, largo)
+    bot.unir(vert, corto)
+    # miniatura: la portada ilustrada
+    from PIL import Image
+    Image.open(S / "h00_base.png").resize((1280, 720)).save(S / "miniatura.png")
+    log(f"Vídeo {bot.duracion(largo):.0f}s, corto {bot.duracion(corto):.0f}s")
+    g["_capitulos"] = bot.capitulos_youtube(capitulos)
+    return largo, corto
+
+
 # ---------------------------------------------------------------- Principal
 def main():
     estado = leer_estado()
@@ -424,7 +637,7 @@ def main():
         raise RuntimeError(f"No publico: {ultimo}")
     bot.SALIDA.mkdir(exist_ok=True)
     (bot.SALIDA / "guion.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
-    largo, corto = bot.montar(g)
+    largo, corto = montar_animado(g)
     if PRUEBA:
         log("Modo prueba: no se sube nada.")
         return
@@ -439,6 +652,7 @@ def main():
     tags_yt = (g.get("palabras_clave", []) + g.get("tags", []))[:20]
     anterior = "\n⏪ ¿Te perdiste la parte 1? La tienes justo antes en el perfil." if parte > 1 else ""
     caption = (f"{g['titulo_post']}\n\n{g['texto_post']}{siguiente}{anterior}\n\n💬 {pregunta}\n\n"
+               f"🎨 Ilustraciones generadas con IA\n\n"
                f"{tags_h} {CFG['hashtags']}")
     textos = bot.SALIDA / "textos_youtube.txt"
     textos.write_text(f"TITULO:\n{g['titulo_youtube']}\n\nDESCRIPCION:\n{descripcion}\n\n"
