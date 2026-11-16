@@ -86,6 +86,90 @@ def reunir_fuentes(refs):
     return "\n\n".join(textos), urls
 
 
+# ---------------------------------------------------------------- Aprendizaje (qué funciona mejor)
+def ig_base_token():
+    token = os.environ.get("IG_TOKEN", "").strip()
+    base = (f"https://graph.facebook.com/{CFG['version_api_instagram']}" if token.startswith("EAA")
+            else f"https://graph.instagram.com/{CFG['version_api_instagram']}")
+    return base, token
+
+
+def actualizar_metricas(estado):
+    """Lee likes y comentarios de los Reels publicados (de más de 36 h) y los guarda en el estado."""
+    base, token = ig_base_token()
+    if not token:
+        return
+    ahora = dt.datetime.utcnow()
+    for p in estado.get("publicados", []):
+        edad = (ahora - dt.datetime.fromisoformat(p["fecha"])).total_seconds() / 3600
+        if edad < 36 or edad > 24 * 30:
+            continue
+        try:
+            r = requests.get(f"{base}/{p['id']}", params={"fields": "like_count,comments_count",
+                                                         "access_token": token}, timeout=30).json()
+            if "like_count" in r or "comments_count" in r:
+                # un comentario vale más que un like: indica más interés
+                p["score"] = r.get("like_count", 0) + 3 * r.get("comments_count", 0)
+        except Exception as ex:
+            log("No se pudieron leer métricas:", ex)
+
+
+def pesos_categorias(estado):
+    """Media de engagement por categoría. Devuelve None si aún no hay datos suficientes."""
+    sumas, cuentas = {}, {}
+    for p in estado.get("publicados", []):
+        if "score" in p:
+            sumas[p["categoria"]] = sumas.get(p["categoria"], 0) + p["score"]
+            cuentas[p["categoria"]] = cuentas.get(p["categoria"], 0) + 1
+    con_datos = [c for c in cuentas if cuentas[c] >= 2]
+    if len(con_datos) < 3:
+        return None
+    medias = {c: sumas[c] / cuentas[c] for c in con_datos}
+    log("Engagement medio por categoría:", {c: round(m, 1) for c, m in medias.items()})
+    return medias
+
+
+def categoria_por_rendimiento(estado, por_defecto):
+    """Más vídeos de lo que mejor funciona, pero siempre un poco de todo (al menos 8 % cada una)."""
+    import random
+    medias = pesos_categorias(estado)
+    if not medias:
+        return por_defecto
+    cats = list(TEMAS.keys())
+    media_global = sum(medias.values()) / len(medias)
+    w = {c: medias.get(c, media_global) + 1 for c in cats}
+    total = sum(w.values())
+    probs = {c: max(w[c] / total, 0.08) for c in cats}
+    rnd = random.Random(f"{dt.date.today()}-{turno()}")
+    eleccion = rnd.choices(cats, weights=[probs[c] for c in cats])[0]
+    log("Categoría elegida por rendimiento:", eleccion, {c: round(p, 2) for c, p in probs.items()})
+    return eleccion
+
+
+def ampliar_temas(estado, categoria):
+    """Si una categoría se queda sin temas, se piden nuevos a Gemini y se comprueba que Wikipedia los tiene."""
+    existentes = [t["titulo"] for t in TEMAS[categoria]]
+    p = f"""Propón 6 temas NUEVOS para vídeos de un canal de aviones y helicópteros, categoría "{categoria}".
+Que interesen al gran público de España y Latinoamérica y que tengan artículo en Wikipedia.
+No repitas ninguno de estos: {existentes}
+Devuelve JSON: {{"temas": [{{"id": "corto-sin-espacios", "titulo": "título atractivo",
+"fuentes": ["es:Título exacto en Wikipedia en español", "en:Exact English Wikipedia title"]}}]}}"""
+    try:
+        nuevos = bot.gemini(p).get("temas", [])
+    except Exception as ex:
+        log("No se pudieron ampliar temas:", ex)
+        return
+    ids = {t["id"] for t in TEMAS[categoria]}
+    for t in nuevos:
+        if t.get("id") in ids or not t.get("fuentes"):
+            continue
+        texto, _ = reunir_fuentes(t["fuentes"])
+        if len(texto) > 3000:
+            estado.setdefault("temas_extra", {}).setdefault(categoria, []).append(t)
+            TEMAS[categoria].append(t)
+            log("Tema nuevo añadido:", t["titulo"])
+
+
 # ---------------------------------------------------------------- Elección del tema
 def elegir(estado):
     """Devuelve (categoria, tema, numero_de_parte, total_de_partes)."""
@@ -96,7 +180,11 @@ def elegir(estado):
                 return pend["categoria"], t, pend["parte"], partes_de(pend["categoria"], t)
     dia = CFG["calendario_aviacion"][dt.date.today().weekday()]
     categoria = dia[turno()] if isinstance(dia, dict) else dia
+    categoria = categoria_por_rendimiento(estado, categoria)
     libres = [t for t in TEMAS[categoria] if t["id"] not in estado["usados"]]
+    if len(libres) <= 2:
+        ampliar_temas(estado, categoria)
+        libres = [t for t in TEMAS[categoria] if t["id"] not in estado["usados"]]
     if not libres:  # se acabó la lista: vuelve a empezar
         estado["usados"] = [u for u in estado["usados"] if u not in {t["id"] for t in TEMAS[categoria]}]
         libres = TEMAS[categoria]
@@ -309,6 +397,10 @@ def hacer_historia(corto, destino):
 # ---------------------------------------------------------------- Principal
 def main():
     estado = leer_estado()
+    for cat, lista in estado.get("temas_extra", {}).items():
+        conocidos = {t["id"] for t in TEMAS.get(cat, [])}
+        TEMAS.setdefault(cat, []).extend(t for t in lista if t["id"] not in conocidos)
+    actualizar_metricas(estado)
     categoria, tema, parte, total = elegir(estado)
     log(f"Turno {turno()} · {categoria} · {tema['titulo']} · parte {parte}/{total}")
     refs = tema["partes_fuentes"][parte - 1] if "partes_fuentes" in tema else tema["fuentes"]
@@ -375,6 +467,10 @@ def main():
         bot.subir_youtube(yt, largo, g["titulo_youtube"], descripcion, tags_yt, bot.SALIDA / "miniatura.png")
         bot.subir_youtube(yt, corto, f"{g['titulo_post'][:85]} #Shorts", descripcion, tags_yt)
     # actualizar estado
+    if media_id:
+        estado.setdefault("publicados", []).append(
+            {"id": media_id, "categoria": categoria, "tema": tema["id"], "fecha": dt.datetime.utcnow().isoformat()})
+        estado["publicados"] = estado["publicados"][-200:]
     if parte < total:
         estado["pendiente"] = {"categoria": categoria, "id": tema["id"], "parte": parte + 1, "ig_parte1": media_id}
     else:
