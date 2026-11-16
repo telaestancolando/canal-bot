@@ -2,27 +2,31 @@ name: Video diario
 
 on:
   schedule:
-    # 02:00 UTC = 03:00 en Espana en invierno (04:00 en verano)
     - cron: "0 2 * * *"
+    - cron: "0 14 * * *"
   workflow_dispatch:
     inputs:
       prueba:
         description: "Modo prueba (genera el video pero no publica)"
         type: boolean
         default: true
-      modo:
-        description: "Tema (vacio = segun el dia: L-X-V dinero, M-J escandalo)"
+      turno:
+        description: "Turno (vacio = segun la hora)"
         type: choice
-        options: ["", "dinero", "escandalo"]
+        options: ["", "manana", "tarde"]
         default: ""
 
 permissions:
   contents: write
 
+concurrency:
+  group: canal
+  cancel-in-progress: false
+
 jobs:
   publicar:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
 
@@ -48,12 +52,12 @@ jobs:
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_TOKEN: ${{ github.token }}
-          MODO: ${{ inputs.modo }}
+          TURNO: ${{ inputs.turno }}
         run: |
           if [ "${{ inputs.prueba }}" = "true" ]; then
-            python bot.py --prueba
+            python aviacion.py --prueba
           else
-            python bot.py
+            python aviacion.py
           fi
 
       - name: Guardar el video para revisarlo
@@ -69,11 +73,12 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Guardar historial de temas
+      - name: Guardar por donde vamos
         if: success() && inputs.prueba != true
         run: |
           git config user.name "canal-bot"
           git config user.email "canal-bot@users.noreply.github.com"
-          git add historial.json || true
-          git commit -m "Historial actualizado" || true
+          git add estado_aviacion.json || true
+          git commit -m "Estado actualizado" || true
+          git pull --rebase || true
           git push || true
