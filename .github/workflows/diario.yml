@@ -2,8 +2,9 @@ name: Video diario
 
 on:
   schedule:
-    - cron: "17 1 * * *"
-    - cron: "17 13 * * *"
+    # Hora UTC. Empieza ~1 h antes de las 03:00 y 15:00 de España para que dé tiempo al render 3D
+    - cron: "7 1 * * *"
+    - cron: "7 13 * * *"
   workflow_dispatch:
     inputs:
       prueba:
@@ -23,26 +24,93 @@ concurrency:
   group: canal
   cancel-in-progress: false
 
+env:
+  TURNO_FORZADO: ${{ inputs.turno }}
+
 jobs:
-  publicar:
+  # 1) Guion, verificación de datos, voces y lista de tomas 3D
+  guion:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-
+          python-version: "3.13"
       - name: Instalar programas
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get update && sudo apt-get install -y ffmpeg
           pip install -r requirements.txt
-          mkdir -p assets
-          mv Inter-*.otf assets/ 2>/dev/null || true
+          mkdir -p assets && mv Inter-*.otf tierra.jpg assets/ 2>/dev/null || true
+      - name: Escribir el guion
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          TURNO: ${{ inputs.turno }}
+        run: python aviacion.py --fase guion
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plan
+          path: salida/
+          retention-days: 2
 
-      - name: Crear y publicar el video
+  # 2) Render 3D repartido entre 16 máquinas a la vez
+  render:
+    needs: guion
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: true
+      matrix:
+        worker: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Instalar Blender
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg libxrender1 libxi6 libxkbcommon0 libsm6 libgl1 libegl1
+          pip install bpy==5.3.0 numpy pillow
+          mkdir -p assets && mv Inter-*.otf tierra.jpg assets/ 2>/dev/null || true
+      - uses: actions/download-artifact@v4
+        with:
+          name: plan
+          path: salida/
+      - name: Renderizar
+        run: python render3d.py salida/tareas.json fotogramas --worker ${{ matrix.worker }} --total 16
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fotogramas-${{ matrix.worker }}
+          path: fotogramas/
+          retention-days: 1
+
+  # 3) Montaje (subtítulos, tarjetas, audio) y publicación
+  publicar:
+    needs: render
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Instalar programas
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install -r requirements.txt
+          mkdir -p assets && mv Inter-*.otf tierra.jpg assets/ 2>/dev/null || true
+      - uses: actions/download-artifact@v4
+        with:
+          name: plan
+          path: salida/
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fotogramas-*
+          path: fotogramas/
+          merge-multiple: true
+      - name: Montar y publicar
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -53,13 +121,13 @@ jobs:
           GH_PAT: ${{ secrets.GH_PAT }}
           GH_TOKEN: ${{ github.token }}
           TURNO: ${{ inputs.turno }}
+          DIR_FOTOGRAMAS: fotogramas
         run: |
           if [ "${{ inputs.prueba }}" = "true" ]; then
-            python aviacion.py --prueba
+            python aviacion.py --fase publicar --prueba
           else
-            python aviacion.py
+            python aviacion.py --fase publicar
           fi
-
       - name: Guardar el video para revisarlo
         if: always()
         uses: actions/upload-artifact@v4
@@ -72,7 +140,6 @@ jobs:
             salida/guion.json
           if-no-files-found: ignore
           retention-days: 7
-
       - name: Guardar por donde vamos
         if: success() && inputs.prueba != true
         run: |
