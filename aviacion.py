@@ -260,34 +260,44 @@ Devuelve JSON:
  "texto_post": "4-6 frases cortas con emojis como viñetas, el dato más impactante, y al final 'Guárdalo y compártelo con alguien que vuele pronto'",
  "paises": ["códigos ISO3 de los países implicados, o vacío"],
  "calculos": [{{"operacion": "35000 * 0.3048", "resultado": 10668}}],
+ "aeronave": {{"modelo": "uno de: a320, b737, b757, b777, a330, a340, b747, a380, dc10, md80, rj85, atr72, c130, caza, heli_ligero, heli_medio, heli_militar, heli_tandem (el más parecido al aparato real de la historia)",
+              "colores": {{"fuselaje": "#hex", "deriva": "#hex (cola)", "franja": "#hex", "motor": "#hex"}},
+              "texto": "nombre de la aerolínea u operador en MAYÚSCULAS para pintarlo en el fuselaje, o CABINA ABIERTA si es un tema general"}},
+ "escenario": {{"terreno": "hierba|campo|selva|mar|montana|nieve|desierto|ciudad", "hora": "dia|atardecer|noche", "tormenta": false}},
  "escenas": [
-   {{"narracion": "...", "visual": "portada", "rotulo": "frase corta", "short": true, "imagen": "English prompt: what the illustration shows", "movimiento": "acercar"}},
-   {{"narracion": "...", "visual": "escena", "rotulo": "frase corta", "imagen": "English prompt...", "movimiento": "derecha"}},
-   {{"narracion": "...", "visual": "cifra", "cifra": "583 pasajeros", "rotulo": "...", "short": true}},
-   {{"narracion": "...", "visual": "cronologia", "eventos": [{{"hora": "17:01", "texto": "..."}}], "rotulo": "..."}},
-   {{"narracion": "...", "visual": "barras", "datos": [{{"etiqueta": "...", "valor": 70}}], "rotulo": "..."}},
-   {{"narracion": "...", "visual": "fuerzas", "rotulo": "..."}},
-   {{"narracion": "...", "visual": "mapa", "rotulo": "..."}},
-   {{"narracion": "...", "visual": "texto", "rotulo": "..."}},
-   {{"narracion": "...", "visual": "cierre", "rotulo": "..."}}
+   {{"narracion": "...", "toma": "vuelo", "params": {{"camara": "lateral"}}, "tarjeta": {{"etiqueta": "AERONAVE / 01", "titulo": "Boeing 757"}}, "short": true}},
+   {{"narracion": "...", "toma": "despegue", "tarjeta": {{"etiqueta": "VELOCIDAD", "titulo": "250 km/h"}}}},
+   {{"narracion": "...", "toma": "emergencia", "params": {{"fuego": true}}, "etiquetas": [{{"parte": "motor", "texto": "motor 2 apagado"}}], "escenario": {{"hora": "noche", "tormenta": true}}}},
+   {{"narracion": "...", "toma": "ala_flujo", "params": {{"angulo": 18, "perdida": true}}, "tarjeta": {{"etiqueta": "ALA / 02", "titulo": "Pérdida"}},
+     "comparacion": [{{"titulo": "Vuelo normal", "texto": "el aire sigue el ala", "angulo": 5}}, {{"titulo": "Pérdida", "texto": "el aire se despega", "angulo": 18}}]}},
+   {{"narracion": "...", "toma": "globo", "puntos": [{{"nombre": "Madrid", "lat": 40.47, "lon": -3.56}}, {{"nombre": "Lima", "lat": -12.02, "lon": -77.11}}]}},
+   {{"narracion": "...", "toma": "rayos_x", "params": {{"pieza": "tren"}}, "tarjeta": {{"etiqueta": "TREN PRINCIPAL / 03", "titulo": "Freno multidisco"}}}},
+   {{"narracion": "...", "toma": "pista", "cierre": true}}
  ]
 }}
-CADA escena lleva "imagen": una descripción EN INGLÉS de la ilustración que acompaña a esa
-frase, como un fotograma de película animada: qué avión o helicóptero (modelo y aerolínea si
-procede), dónde está, qué hace, el tiempo y la luz, el encuadre (plano general, vista desde la
-cabina, desde la torre, cenital...). Que las escenas sigan la historia (rodando por la pista,
-despegando entre la niebla, la torre de control, la cabina de noche...). Sin texto ni letras en
-la imagen. En accidentes: NUNCA víctimas, cuerpos, heridos ni sangre; el impacto se sugiere
-(niebla, humo a lo lejos, luces de emergencia), no se muestra en detalle.
-"movimiento" de cámara: "acercar", "alejar", "derecha" o "izquierda" (hacia donde se mueve el avión).
-Usa "escena" (solo ilustración) en la mayoría de escenas, 60-70 %; el resto, gráficos con datos.
-Visuales: "cronologia" (hasta 5 eventos con hora o fecha) para accidentes; "fuerzas" (perfil de
-ala con sustentación, peso, empuje y resistencia) solo en aerodinámica; "barras" para comparar
-cifras de las fuentes (velocidades, pasajeros, alcance...); "mapa" solo si hay países.
-10 a 16 escenas de 1 a 3 frases cortas. La primera es "portada" con un gancho brutal en los 3
-primeros segundos (un dato o una frase que obligue a seguir viendo). Marca "short": true en 4-6
-escenas que juntas cuenten lo esencial en menos de 60 segundos. Hacia la mitad, una frase
-natural invitando a seguir el canal. La última es "cierre": {'el gancho de la parte 2' if total > 1 and parte == 1 else 'la pregunta para comentarios'}."""
+El vídeo es una ANIMACIÓN 3D que se genera sola a partir de estas tomas. Cada escena elige una "toma":
+- "pista": el aparato parado en la pista y la cámara girando alrededor (presentar el avión).
+- "rodaje": rodando por la pista. "despegue": carrera y despegue. "aterrizaje": aproximación y toma de tierra.
+- "vuelo": en vuelo. params.camara: lateral | persecucion | frontal | abajo | arriba; params.altitud_m opcional.
+- "viraje": girando inclinado. "emergencia": en apuros, picando y balanceándose (params.fuego true/false).
+- "ala_flujo": primer plano del ala con las líneas de aire (params.angulo en grados, params.perdida true/false).
+- "motor": primer plano del motor (params.estado: normal | apagado | fuego).
+- "rayos_x": el aparato en líneas de alambre con una pieza en rojo (params.pieza: motor | tren | ala | cola | rotor | rotor_cola | cabina | fuselaje).
+- "globo": la Tierra con la ruta dibujándose entre "puntos" (nombre, lat, lon de aeropuertos o ciudades; 2 a 4).
+- "cenital": vista desde arriba. Helicópteros: "heli_estacionario" (quieto en el aire con el flujo del rotor), "heli_vuelo", "heli_rotor" (primer plano del rotor con el aire bajando).
+"escenario" global: terreno, hora y tormenta de la historia; una escena puede cambiarlo con su propio "escenario"
+(p. ej. la parte de la tormenta). Usa "atardecer" o "noche" cuando la historia ocurre así o para dar ambiente.
+"tarjeta" (opcional, en unas 6-9 escenas): etiqueta corta en mayúsculas tipo "ALA / 02", "VELOCIDAD", "17:42"
+y un título de 1-3 palabras o una cifra con unidad ("60 toneladas", "Sustentación"). Las cifras, de las fuentes.
+"etiquetas" (opcional): 1-2 rótulos que señalan una pieza visible (parte: morro, cabina, ala, flaps, alerones,
+motor, tren, cola, estabilizador, fuselaje, rotor, rotor_cola) con un texto de 1-4 palabras.
+"comparacion" (opcional, solo aerodinámica): 2 casos con su perfil de ala y ángulo. NO es una pregunta al público.
+Varía las tomas: no repitas la misma dos veces seguidas, y alterna planos generales y de detalle.
+En accidentes: nada de víctimas; el impacto nunca se muestra, se corta antes (emergencia, humo, tormenta).
+10 a 16 escenas de 1 a 3 frases cortas. La primera, con un gancho brutal en los 3 primeros segundos (un dato o
+una frase que obligue a seguir viendo). Marca "short": true en 4-6 escenas que juntas cuenten lo esencial en
+menos de 60 segundos. Hacia la mitad, una frase natural invitando a seguir el canal. La última lleva
+"cierre": true y es {'el gancho de la parte 2' if total > 1 and parte == 1 else 'la pregunta para comentarios'}."""
     return bot.gemini(p)
 
 
@@ -384,6 +394,12 @@ def verificar_av(g, texto):
     import copy
     h = copy.deepcopy(g)
     for e in h["escenas"]:
+        extra = []
+        tj = e.get("tarjeta") or {}
+        extra += [tj.get("etiqueta", ""), tj.get("titulo", "")]
+        extra += [x.get("texto", "") for x in e.get("etiquetas") or []]
+        extra += [f"{x.get('titulo', '')} {x.get('texto', '')}" for x in e.get("comparacion") or []]
+        e["rotulo"] = (e.get("rotulo", "") + " " + " ".join(extra)).strip()
         if e.get("visual") == "cronologia":
             e["rotulo"] = e.get("rotulo", "") + " " + " ".join(
                 f"{x.get('hora', '')} {x.get('texto', '')}" for x in e.get("eventos", []))
@@ -607,8 +623,73 @@ def montar_animado(g):
     return largo, corto
 
 
+# ---------------------------------------------------------------- Animación 3D
+FPS = 24
+RESOLUCION = {"h": (1280, 720), "v": (720, 1280)}
+TOMAS_VALIDAS = {"pista", "rodaje", "despegue", "aterrizaje", "vuelo", "viraje", "emergencia", "ala_flujo", "motor",
+                 "globo", "heli_estacionario", "heli_vuelo", "heli_rotor", "cenital", "rayos_x"}
+
+
+def preparar_tareas(g, semilla_base):
+    """Voz con tiempos por palabra para cada escena y lista de tomas 3D a renderizar."""
+    import math
+    S = bot.SALIDA
+    S.mkdir(exist_ok=True)
+    tareas = []
+    aer = g.get("aeronave") or {"modelo": "a320"}
+    for i, e in enumerate(g["escenas"]):
+        mp3 = S / f"v{i:02}.mp3"
+        e["_palabras"] = bot.voz_palabras(e["narracion"], mp3)
+        d = bot.duracion(mp3)
+        e["_frames"] = int(math.ceil((d + 0.45) * FPS))
+        toma = e.get("toma") if e.get("toma") in TOMAS_VALIDAS else "vuelo"
+        esc = dict(g.get("escenario") or {})
+        esc.update(e.get("escenario") or {})
+        params = dict(e.get("params") or {})
+        if toma == "globo":
+            params["puntos"] = [p for p in (e.get("puntos") or []) if "lat" in p and "lon" in p]
+        orient = ["h"] + (["v"] if (e.get("short") or e.get("cierre")) else [])
+        for o in orient:
+            ancho, alto = RESOLUCION[o]
+            tareas.append({"id": f"e{i:02}{o}", "toma": toma, "params": params, "aeronave": aer, "escenario": esc,
+                           "frames": e["_frames"], "fps": FPS, "ancho": ancho, "alto": alto, "muestras": 8,
+                           "semilla": (semilla_base + i * 7) % 100000})
+    (S / "tareas.json").write_text(json.dumps(tareas, ensure_ascii=False), encoding="utf-8")
+    log(f"{len(tareas)} tomas 3D, {sum(t['frames'] for t in tareas)} fotogramas")
+    return tareas
+
+
+def montar_3d(g, dir_frames):
+    import montaje3d
+    S = bot.SALIDA
+    def lista(orient):
+        res = []
+        for i, e in enumerate(g["escenas"]):
+            if orient == "v" and not (e.get("short") or e.get("cierre")):
+                continue
+            res.append({"tarea_id": f"e{i:02}{orient}", "frames": e["_frames"], "audio": S / f"v{i:02}.mp3",
+                        "palabras": e.get("_palabras"), "tarjeta": e.get("tarjeta"), "etiquetas": e.get("etiquetas"),
+                        "tormenta": bool(((g.get("escenario") or {}) | (e.get("escenario") or {})).get("tormenta")),
+                        "puntos": e.get("puntos") if e.get("toma") == "globo" else None,
+                        "comparacion": e.get("comparacion"), "cierre": bool(e.get("cierre"))})
+        return res
+    largo, corto = S / "video.mp4", S / "corto.mp4"
+    montaje3d.montar(lista("h"), "h", dir_frames, largo, CFG, S / "tmp_montaje", FPS)
+    montaje3d.montar(lista("v"), "v", dir_frames, corto, CFG, S / "tmp_montaje", FPS)
+    montaje3d.miniatura(largo, g.get("titulo_youtube", ""), S / "miniatura.png", CFG["colores"]["acento"])
+    capitulos, t = [], 0.0
+    for e in g["escenas"]:
+        nombre = (e.get("tarjeta") or {}).get("titulo") or e.get("toma", "")
+        capitulos.append((t, nombre))
+        t += e["_frames"] / FPS
+    g["_capitulos"] = bot.capitulos_youtube(capitulos)
+    log(f"Vídeo {bot.duracion(largo):.0f}s, corto {bot.duracion(corto):.0f}s")
+    return largo, corto
+
+
 # ---------------------------------------------------------------- Principal
-def main():
+def fase_guion():
+    """Elige tema, escribe y verifica el guion, genera las voces y la lista de tomas 3D."""
     estado = leer_estado()
     for cat, lista in estado.get("temas_extra", {}).items():
         conocidos = {t["id"] for t in TEMAS.get(cat, [])}
@@ -637,7 +718,22 @@ def main():
         raise RuntimeError(f"No publico: {ultimo}")
     bot.SALIDA.mkdir(exist_ok=True)
     (bot.SALIDA / "guion.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
-    largo, corto = montar_animado(g)
+    preparar_tareas(g, abs(hash(tema["id"])) + parte * 1000)
+    plan = {"g": g, "categoria": categoria, "tema": tema, "parte": parte, "total": total, "urls": urls, "estado": estado}
+    (bot.SALIDA / "plan.json").write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+    log("Guion y voces listos")
+
+
+def fase_render(worker=0, total=1):
+    import subprocess
+    subprocess.run([sys.executable, str(bot.RAIZ / "render3d.py"), str(bot.SALIDA / "tareas.json"),
+                    str(bot.SALIDA / "fotogramas"), "--worker", str(worker), "--total", str(total)], check=True)
+
+
+def fase_publicar(dir_frames=None):
+    plan = json.loads((bot.SALIDA / "plan.json").read_text(encoding="utf-8"))
+    g, categoria, tema, parte, total, urls, estado = (plan[k] for k in ("g", "categoria", "tema", "parte", "total", "urls", "estado"))
+    largo, corto = montar_3d(g, dir_frames or str(bot.SALIDA / "fotogramas"))
     if PRUEBA:
         log("Modo prueba: no se sube nada.")
         return
@@ -652,7 +748,7 @@ def main():
     tags_yt = (g.get("palabras_clave", []) + g.get("tags", []))[:20]
     anterior = "\n⏪ ¿Te perdiste la parte 1? La tienes justo antes en el perfil." if parte > 1 else ""
     caption = (f"{g['titulo_post']}\n\n{g['texto_post']}{siguiente}{anterior}\n\n💬 {pregunta}\n\n"
-               f"🎨 Ilustraciones generadas con IA\n\n"
+               f"🎬 Recreación en animación 3D\n\n"
                f"{tags_h} {CFG['hashtags']}")
     textos = bot.SALIDA / "textos_youtube.txt"
     textos.write_text(f"TITULO:\n{g['titulo_youtube']}\n\nDESCRIPCION:\n{descripcion}\n\n"
@@ -692,6 +788,19 @@ def main():
         estado["usados"].append(tema["id"])
     guardar_estado(estado)
     log("Hecho")
+
+
+def main():
+    fase = sys.argv[sys.argv.index("--fase") + 1] if "--fase" in sys.argv else "todo"
+    if fase in ("guion", "todo"):
+        fase_guion()
+    if fase == "render":
+        w = int(os.environ.get("WORKER", "0")); n = int(os.environ.get("WORKERS", "1"))
+        fase_render(w, n)
+    if fase == "todo":
+        fase_render(0, 1)
+    if fase in ("publicar", "todo"):
+        fase_publicar(os.environ.get("DIR_FOTOGRAMAS"))
 
 
 if __name__ == "__main__":

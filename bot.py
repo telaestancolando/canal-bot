@@ -173,7 +173,16 @@ def extraer_json(txt):
     if txt.startswith("```"):
         txt = txt.strip("`")
         txt = txt[txt.find("{"):]
-    return json.loads(txt[txt.find("{"):txt.rfind("}") + 1])
+    trozo = txt[txt.find("{"):txt.rfind("}") + 1]
+    try:
+        return json.loads(trozo)
+    except ValueError:
+        # JSON con alguna coma o comilla mal puesta: se repara en vez de tirar todo
+        from json_repair import repair_json
+        datos = repair_json(trozo or txt, return_objects=True)
+        if not isinstance(datos, dict) or not datos:
+            raise
+        return datos
 
 
 def llm_respaldo(prompt):
@@ -205,17 +214,25 @@ def gemini(prompt):
     }
     # Plan gratuito: si un modelo da 429 (cupo) o tarda demasiado, se pasa al siguiente.
     # Si el cupo DIARIO está agotado, se salta directamente al respaldo.
-    for modelo in [CFG["modelo_gemini"], "gemini-flash-lite-latest"]:
+    # Cada modelo tiene su propio cupo diario gratuito: se van probando uno tras otro.
+    modelos = [CFG["modelo_gemini"], "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash-lite",
+               "gemini-2.0-flash", "gemma-3-27b-it"]
+    vistos = []
+    for modelo in [m for m in modelos if not (m in vistos or vistos.append(m))]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
+        cuerpo = body
+        if modelo.startswith("gemma"):  # Gemma no admite el modo JSON: se pide en el texto
+            cuerpo = {"contents": [{"parts": [{"text": prompt + "\n\nResponde SOLO con el JSON, sin nada más."}]}],
+                      "generationConfig": {"temperature": 0.7}}
         for intento in range(2):
             try:
-                r = requests.post(url, json=body, timeout=300,
+                r = requests.post(url, json=cuerpo, timeout=300,
                                   headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
                 if r.status_code == 200:
                     return extraer_json(r.json()["candidates"][0]["content"]["parts"][0]["text"])
                 log("Gemini", modelo, r.status_code, r.text[:160])
-                if r.status_code == 429 and "PerDay" in r.text:
-                    break  # cupo diario de este modelo agotado: siguiente modelo
+                if (r.status_code == 429 and "PerDay" in r.text) or r.status_code in (400, 404):
+                    break  # cupo diario agotado o modelo no disponible: siguiente modelo
                 time.sleep(65 if r.status_code == 429 else 15)
             except (requests.exceptions.RequestException, KeyError, ValueError) as ex:
                 log("Gemini", modelo, "falló:", str(ex)[:160])
@@ -421,6 +438,65 @@ def voz(texto, locutor, destino):
             log("TTS reintento", ex)
             time.sleep(5)
     raise RuntimeError("No se pudo generar la voz")
+
+
+async def _tts_palabras(texto, voz, destino):
+    import edge_tts
+    palabras = []
+    com = edge_tts.Communicate(texto, voz, rate="+8%", boundary="WordBoundary")
+    with open(destino, "wb") as fh:
+        async for ch in com.stream():
+            if ch["type"] == "audio":
+                fh.write(ch["data"])
+            elif ch["type"] == "WordBoundary":
+                t0 = ch["offset"] / 1e7
+                palabras.append([ch["text"], t0, t0 + ch["duration"] / 1e7])
+    return palabras
+
+
+def voz_palabras(texto, destino):
+    """Genera la voz y devuelve cada palabra con su momento exacto [(palabra, inicio, fin)].
+    Las palabras se toman del texto original (con su puntuación) para los subtítulos."""
+    v = CFG["voz_a"]
+    pal = None
+    for intento in range(3):
+        try:
+            pal = asyncio.run(_tts_palabras(texto, v, destino))
+            break
+        except Exception as ex:
+            log("TTS reintento", ex)
+            time.sleep(5)
+    if pal is None:
+        raise RuntimeError("No se pudo generar la voz")
+    d = duracion(destino)
+    originales = texto.split()
+    if not pal or abs(len(pal) - len(originales)) > max(2, len(originales) * 0.15):
+        # sin marcas fiables: repartir por longitud de palabra
+        tot = sum(len(w) + 1 for w in originales) or 1
+        t, pal = 0.1, []
+        for w in originales:
+            dur = (d - 0.2) * (len(w) + 1) / tot
+            pal.append([w, t, t + dur]); t += dur
+        return pal
+    # emparejar con el texto original para recuperar comas, puntos y signos
+    import difflib
+    norm = lambda w: re.sub(r"[^\wáéíóúüñ]", "", w.lower())
+    a = [norm(w) for w in originales]
+    b = [norm(p[0]) for p in pal]
+    tiempos = [None] * len(originales)
+    for blk in difflib.SequenceMatcher(None, a, b, autojunk=False).get_matching_blocks():
+        for k in range(blk.size):
+            tiempos[blk.a + k] = (pal[blk.b + k][1], pal[blk.b + k][2])
+    # huecos: interpolar entre vecinos conocidos
+    for k in range(len(tiempos)):
+        if tiempos[k] is None:
+            ant = next((tiempos[x][1] for x in range(k - 1, -1, -1) if tiempos[x]), 0.05)
+            sig_i = next((x for x in range(k + 1, len(tiempos)) if tiempos[x]), None)
+            sig = tiempos[sig_i][0] if sig_i is not None else d - 0.1
+            n_hueco = (sig_i if sig_i is not None else len(tiempos)) - k
+            paso = max((sig - ant) / max(n_hueco, 1), 0.08)
+            tiempos[k] = (ant, ant + paso)
+    return [[w, t[0], t[1]] for w, t in zip(originales, tiempos)]
 
 
 def duracion(f):
