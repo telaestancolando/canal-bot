@@ -347,17 +347,22 @@ def montar(escenas, orient, dir_frames, salida, cfg, tmp, fps=24, W=None, H=None
 def miniatura(video, titulo, destino, acento):
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "1.5", "-i", str(video), "-frames:v", "1",
                     str(destino)], check=True)
-    im = Image.open(destino).convert("RGBA").resize((1280, 720))
+    im = Image.open(destino).convert("RGBA")
+    if im.height > im.width:  # vídeo vertical: miniatura 9:16
+        im = im.resize((720, 1280))
+    else:
+        im = im.resize((1280, 720))
+    W, H = im.size
     capa = Image.new("RGBA", im.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(capa)
-    for y in range(720):
-        d.line([(0, y), (1280, y)], fill=(5, 10, 20, int(190 * max(0, (y - 330) / 390))))
+    for y in range(H):
+        d.line([(0, y), (W, y)], fill=(5, 10, 20, int(190 * max(0, (y - H * 0.45) / (H * 0.55)))))
     im = Image.alpha_composite(im, capa)
     d = ImageDraw.Draw(im)
     import textwrap
-    lineas = textwrap.wrap(titulo.upper(), 22)[:3]
-    f = fuente("Black", 78)
-    y = 700 - 92 * len(lineas)
+    lineas = textwrap.wrap(titulo.upper(), 22 if W > H else 14)[:4]
+    f = fuente("Black", 78 if W > H else 70)
+    y = H - 20 - 92 * len(lineas)
     for ln in lineas:
         d.text((52, y + 4), ln, font=f, fill=(0, 0, 0, 200))
         d.text((48, y), ln, font=f, fill=(255, 255, 255, 255))

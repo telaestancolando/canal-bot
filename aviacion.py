@@ -215,6 +215,8 @@ NORMAS (obligatorias):
   especular. Las causas, solo las que recoge la investigación oficial según las fuentes.
 - No hagas preguntas al público tipo concurso ni le pidas que elija opciones.
 - Habla de aviones y técnica; no opines de política.
+- No anuncies otros vídeos ni días concretos ("el miércoles veremos..."), salvo el aviso de la parte 2 de una serie.
+- Cada vídeo cuenta el tema COMPLETO: no lo dejes en una pregunta o en un "lo veremos otro día".
 - El público es España y toda Latinoamérica: español neutro que se entienda en todos los
   países, sin expresiones solo de España (nada de "vale", "guay", "flipar", "vosotros").
   Da las distancias en kilómetros y metros, y la altitud también en pies.
@@ -240,7 +242,8 @@ def escribir_guion(categoria, tema, parte, total, texto, urls):
         titulo_parte = f" (Parte {parte})"
     else:
         serie, titulo_parte = "Vídeo único, completo.", ""
-    p = f"""Escribe el guion de un vídeo de 3 a 4 minutos (450-550 palabras de narración) para el canal
+    p = f"""Escribe el guion de un vídeo vertical de entre 50 segundos y 3 minutos (150-440 palabras de narración:
+unas 150-200 si el tema es sencillo, hasta 440 si es una historia con mucho que contar) para el canal
 de aviones y helicópteros "{CFG['canal']}". Tema: {tema['titulo']}{titulo_parte}. Categoría: {categoria}.
 {serie}
 {NORMAS_AV.format(constantes=json.dumps(CFG['constantes']))}
@@ -294,9 +297,8 @@ motor, tren, cola, estabilizador, fuselaje, rotor, rotor_cola) con un texto de 1
 "comparacion" (opcional, solo aerodinámica): 2 casos con su perfil de ala y ángulo. NO es una pregunta al público.
 Varía las tomas: no repitas la misma dos veces seguidas, y alterna planos generales y de detalle.
 En accidentes: nada de víctimas; el impacto nunca se muestra, se corta antes (emergencia, humo, tormenta).
-10 a 16 escenas de 1 a 3 frases cortas. La primera, con un gancho brutal en los 3 primeros segundos (un dato o
-una frase que obligue a seguir viendo). Marca "short": true en 4-6 escenas que juntas cuenten lo esencial en
-menos de 60 segundos. Hacia la mitad, una frase natural invitando a seguir el canal. La última lleva
+5 a 14 escenas de 1 a 3 frases cortas. La primera, con un gancho brutal en los 3 primeros segundos (un dato o
+una frase que obligue a seguir viendo). Hacia la mitad, una frase natural invitando a seguir el canal. La última lleva
 "cierre": true y es {'el gancho de la parte 2' if total > 1 and parte == 1 else 'la pregunta para comentarios'}."""
     return bot.gemini(p)
 
@@ -642,16 +644,19 @@ def preparar_tareas(g, semilla_base):
         e["_palabras"] = bot.voz_palabras(e["narracion"], mp3)
         d = bot.duracion(mp3)
         e["_frames"] = int(math.ceil((d + 0.45) * FPS))
+    esc = g["escenas"]
+    esc[-1]["cierre"] = True
+    log(f"Vídeo de {sum(e['_frames'] for e in esc) / FPS:.0f} s")
+    for i, e in enumerate(esc):
         toma = e.get("toma") if e.get("toma") in TOMAS_VALIDAS else "vuelo"
-        esc = dict(g.get("escenario") or {})
-        esc.update(e.get("escenario") or {})
+        escv = dict(g.get("escenario") or {})
+        escv.update(e.get("escenario") or {})
         params = dict(e.get("params") or {})
         if toma == "globo":
             params["puntos"] = [p for p in (e.get("puntos") or []) if "lat" in p and "lon" in p]
-        orient = ["h"] + (["v"] if (e.get("short") or e.get("cierre")) else [])
-        for o in orient:
+        for o in ["v"]:  # un solo vídeo vertical: el mismo para Instagram y YouTube
             ancho, alto = RESOLUCION[o]
-            tareas.append({"id": f"e{i:02}{o}", "toma": toma, "params": params, "aeronave": aer, "escenario": esc,
+            tareas.append({"id": f"e{i:02}{o}", "toma": toma, "params": params, "aeronave": aer, "escenario": escv,
                            "frames": e["_frames"], "fps": FPS, "ancho": ancho, "alto": alto, "muestras": 8,
                            "semilla": (semilla_base + i * 7) % 100000})
     (S / "tareas.json").write_text(json.dumps(tareas, ensure_ascii=False), encoding="utf-8")
@@ -665,18 +670,17 @@ def montar_3d(g, dir_frames):
     def lista(orient):
         res = []
         for i, e in enumerate(g["escenas"]):
-            if orient == "v" and not (e.get("short") or e.get("cierre")):
-                continue
             res.append({"tarea_id": f"e{i:02}{orient}", "frames": e["_frames"], "audio": S / f"v{i:02}.mp3",
                         "palabras": e.get("_palabras"), "tarjeta": e.get("tarjeta"), "etiquetas": e.get("etiquetas"),
                         "tormenta": bool(((g.get("escenario") or {}) | (e.get("escenario") or {})).get("tormenta")),
                         "puntos": e.get("puntos") if e.get("toma") == "globo" else None,
                         "comparacion": e.get("comparacion"), "cierre": bool(e.get("cierre"))})
         return res
+    import shutil
     largo, corto = S / "video.mp4", S / "corto.mp4"
-    montaje3d.montar(lista("h"), "h", dir_frames, largo, CFG, S / "tmp_montaje", FPS)
     montaje3d.montar(lista("v"), "v", dir_frames, corto, CFG, S / "tmp_montaje", FPS)
-    montaje3d.miniatura(largo, g.get("titulo_youtube", ""), S / "miniatura.png", CFG["colores"]["acento"])
+    shutil.copy(corto, largo)  # el mismo vídeo para YouTube e Instagram
+    montaje3d.miniatura(corto, g.get("titulo_youtube", ""), S / "miniatura.png", CFG["colores"]["acento"])
     capitulos, t = [], 0.0
     for e in g["escenas"]:
         nombre = (e.get("tarjeta") or {}).get("titulo") or e.get("toma", "")
@@ -688,6 +692,49 @@ def montar_3d(g, dir_frames):
 
 
 # ---------------------------------------------------------------- Principal
+MIN_ESCENAS, MIN_PALABRAS, MAX_PALABRAS = 4, 130, 470
+
+
+def palabras_guion(g):
+    return sum(len((e.get("narracion") or "").split()) for e in g.get("escenas", []))
+
+
+def longitud_ok(g):
+    return len(g.get("escenas", [])) >= MIN_ESCENAS and MIN_PALABRAS <= palabras_guion(g) <= MAX_PALABRAS
+
+
+def ampliar_guion(g, texto):
+    """Si el guion ha salido corto (o la IA lo ha recortado), se pide completarlo."""
+    largo = palabras_guion(g) > MAX_PALABRAS
+    p = f"""Este guion (JSON) es DEMASIADO {'LARGO' if largo else 'CORTO'}: tiene {len(g.get('escenas', []))} escenas y {palabras_guion(g)} palabras.
+Tiene que durar entre 50 segundos y 3 minutos: entre 150 y 440 palabras de narración en total, en 5 a 14 escenas.
+{'Acórtalo quitando lo menos importante' if largo else 'Amplíalo contando la historia completa y con más detalle'}, usando SOLO datos de las FUENTES.
+Mantén el mismo formato JSON y todos los campos (aeronave, escenario, tomas variadas, tarjetas, la última con
+"cierre": true). No anuncies vídeos futuros ni días concretos.
+GUION:
+{json.dumps(g, ensure_ascii=False)}
+FUENTES:
+{texto[:24000]}
+Devuelve el JSON completo."""
+    return bot.gemini(p)
+
+
+def asegurar_longitud(g, texto, previo=None):
+    for _ in range(2):
+        if longitud_ok(g):
+            return g
+        log(f"Guion fuera de medida ({len(g.get('escenas', []))} escenas, {palabras_guion(g)} palabras): lo ajusto")
+        try:
+            g = ampliar_guion(g, texto)
+        except Exception as ex:
+            log("No se pudo ampliar:", ex)
+    if longitud_ok(g):
+        return g
+    if previo is not None and longitud_ok(previo):
+        return previo
+    raise RuntimeError(f"No publico: el guion no tiene una duración válida ({palabras_guion(g)} palabras)")
+
+
 def fase_guion():
     """Elige tema, escribe y verifica el guion, genera las voces y la lista de tomas 3D."""
     estado = leer_estado()
@@ -703,6 +750,7 @@ def fase_guion():
         raise RuntimeError(f"Fuentes insuficientes para {tema['id']}")
     ultimo = None
     g = escribir_guion(categoria, tema, parte, total, texto, urls)
+    g = asegurar_longitud(g, texto)
     for intento in range(3):
         for e in g["escenas"]:
             e["locutor"] = "A"  # siempre voz masculina
@@ -713,9 +761,17 @@ def fase_guion():
             ultimo = ex
             log("Verificación fallida, corrigiendo solo esas cifras:", ex)
             if intento < 2:
+                anterior = g
                 g = corregir_guion(g, str(ex), texto)
+                # a veces la corrección devuelve el guion recortado: se recupera la longitud
+                g = asegurar_longitud(g, texto, anterior)
+                if palabras_guion(g) < palabras_guion(anterior) * 0.8:
+                    log("La corrección recortó el guion; se vuelve a intentar sobre el anterior")
+                    g = anterior
     else:
         raise RuntimeError(f"No publico: {ultimo}")
+    if not longitud_ok(g):
+        raise RuntimeError("No publico: guion con duración no válida")
     bot.SALIDA.mkdir(exist_ok=True)
     (bot.SALIDA / "guion.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
     preparar_tareas(g, abs(hash(tema["id"])) + parte * 1000)
@@ -742,7 +798,7 @@ def fase_publicar(dir_frames=None):
     fuentes_txt = "\n".join(urls)
     siguiente = (f"\n▶️ La parte 2, {cuando_siguiente()}. Sigue el canal para no perdértela."
                  if (total > 1 and parte == 1) else "")
-    descripcion = (f"{g['descripcion']}{siguiente}\n\n💬 {pregunta}\n\n📌 Capítulos:\n{g.get('_capitulos', '')}\n\n"
+    descripcion = (f"{g['descripcion']}{siguiente}\n\n💬 {pregunta}\n\n"
                    f"📚 Fuentes:\n{fuentes_txt}\n\n🔔 Dos vídeos de aviación cada día.\n"
                    f"📲 Instagram: {CFG['usuario_instagram']}\n\n{tags_h} {CFG['hashtags']}")
     tags_yt = (g.get("palabras_clave", []) + g.get("tags", []))[:20]
@@ -752,10 +808,10 @@ def fase_publicar(dir_frames=None):
                f"{tags_h} {CFG['hashtags']}")
     textos = bot.SALIDA / "textos_youtube.txt"
     textos.write_text(f"TITULO:\n{g['titulo_youtube']}\n\nDESCRIPCION:\n{descripcion}\n\n"
-                      f"TITULO SHORT:\n{g['titulo_post'][:85]} #Shorts\n\nTEXTO INSTAGRAM:\n{caption}\n", encoding="utf-8")
+                      f"(Súbelo como Short: el vídeo es corto.mp4)\n\nTEXTO INSTAGRAM:\n{caption}\n", encoding="utf-8")
     etiqueta = f"{dt.date.today():%Y%m%d}-{turno()}-{int(time.time())}"
     historia = hacer_historia(corto, bot.SALIDA / "historia.mp4")
-    adjuntos = [corto, largo, bot.SALIDA / "miniatura.png", textos, historia]
+    adjuntos = [corto, bot.SALIDA / "miniatura.png", textos, historia]
     video_url = bot.url_publica(adjuntos, etiqueta)
     historia_url = video_url.rsplit("/", 1)[0] + "/historia.mp4"
     media_id = None
@@ -774,8 +830,7 @@ def fase_publicar(dir_frames=None):
             log("No se pudo publicar la story:", ex)
     if CFG.get("youtube_auditado"):
         yt = bot.youtube()
-        bot.subir_youtube(yt, largo, g["titulo_youtube"], descripcion, tags_yt, bot.SALIDA / "miniatura.png")
-        bot.subir_youtube(yt, corto, f"{g['titulo_post'][:85]} #Shorts", descripcion, tags_yt)
+        bot.subir_youtube(yt, corto, f"{g['titulo_youtube'][:90]} #Shorts", descripcion, tags_yt)
     # actualizar estado
     if media_id:
         estado.setdefault("publicados", []).append(
