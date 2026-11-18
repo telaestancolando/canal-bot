@@ -1,17 +1,20 @@
 {
-  "usados": [],
-  "pendiente": {
-    "categoria": "general",
-    "id": "boeing-airbus",
-    "parte": 2,
-    "ig_parte1": "18148838392576431"
-  },
+  "usados": [
+    "boeing-airbus"
+  ],
+  "pendiente": null,
   "publicados": [
     {
       "id": "18148838392576431",
       "categoria": "general",
       "tema": "boeing-airbus",
       "fecha": "2026-11-17T02:49:38.690265"
+    },
+    {
+      "id": "18153527584557826",
+      "categoria": "general",
+      "tema": "boeing-airbus",
+      "fecha": "2026-11-18T03:42:33.371019"
     }
   ]
 }
