@@ -1,13 +1,9 @@
 {
   "usados": [
-    "boeing-airbus"
+    "boeing-airbus",
+    "sustentacion"
   ],
-  "pendiente": {
-    "categoria": "aerodinamica",
-    "id": "sustentacion",
-    "parte": 2,
-    "ig_parte1": "18385174099239865"
-  },
+  "pendiente": null,
   "publicados": [
     {
       "id": "18148838392576431",
@@ -26,6 +22,12 @@
       "categoria": "aerodinamica",
       "tema": "sustentacion",
       "fecha": "2026-11-18T15:18:32.818775"
+    },
+    {
+      "id": "18116111890872792",
+      "categoria": "aerodinamica",
+      "tema": "sustentacion",
+      "fecha": "2026-11-19T02:55:55.104665"
     }
   ]
 }
