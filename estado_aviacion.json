@@ -2,7 +2,8 @@
   "usados": [
     "boeing-airbus",
     "sustentacion",
-    "andes571"
+    "andes571",
+    "a320-737"
   ],
   "pendiente": null,
   "publicados": [
@@ -16,13 +17,15 @@
       "id": "18153527584557826",
       "categoria": "general",
       "tema": "boeing-airbus",
-      "fecha": "2026-11-18T03:42:33.371019"
+      "fecha": "2026-11-18T03:42:33.371019",
+      "score": 0
     },
     {
       "id": "18385174099239865",
       "categoria": "aerodinamica",
       "tema": "sustentacion",
-      "fecha": "2026-11-18T15:18:32.818775"
+      "fecha": "2026-11-18T15:18:32.818775",
+      "score": 5
     },
     {
       "id": "18116111890872792",
@@ -35,6 +38,12 @@
       "categoria": "supervivencia",
       "tema": "andes571",
       "fecha": "2026-11-19T14:53:23.301715"
+    },
+    {
+      "id": "18136503403747245",
+      "categoria": "general",
+      "tema": "a320-737",
+      "fecha": "2026-11-20T15:33:54.982886"
     }
   ]
 }
