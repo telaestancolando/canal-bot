@@ -4,7 +4,8 @@
     "sustentacion",
     "andes571",
     "a320-737",
-    "hudson"
+    "hudson",
+    "sr71"
   ],
   "pendiente": null,
   "publicados": [
@@ -39,7 +40,8 @@
       "id": "17967588402241943",
       "categoria": "supervivencia",
       "tema": "andes571",
-      "fecha": "2026-11-19T14:53:23.301715"
+      "fecha": "2026-11-19T14:53:23.301715",
+      "score": 1
     },
     {
       "id": "18136503403747245",
@@ -52,6 +54,12 @@
       "categoria": "supervivencia",
       "tema": "hudson",
       "fecha": "2026-11-21T02:44:49.387253"
+    },
+    {
+      "id": "18047619437827710",
+      "categoria": "legendarios",
+      "tema": "sr71",
+      "fecha": "2026-11-21T15:30:10.437249"
     }
   ]
 }
