@@ -3,7 +3,8 @@
     "boeing-airbus",
     "sustentacion",
     "andes571",
-    "a320-737"
+    "a320-737",
+    "hudson"
   ],
   "pendiente": null,
   "publicados": [
@@ -31,7 +32,8 @@
       "id": "18116111890872792",
       "categoria": "aerodinamica",
       "tema": "sustentacion",
-      "fecha": "2026-11-19T02:55:55.104665"
+      "fecha": "2026-11-19T02:55:55.104665",
+      "score": 0
     },
     {
       "id": "17967588402241943",
@@ -44,6 +46,12 @@
       "categoria": "general",
       "tema": "a320-737",
       "fecha": "2026-11-20T15:33:54.982886"
+    },
+    {
+      "id": "17955066312049403",
+      "categoria": "supervivencia",
+      "tema": "hudson",
+      "fecha": "2026-11-21T02:44:49.387253"
     }
   ]
 }
