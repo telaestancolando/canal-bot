@@ -335,7 +335,12 @@ def montar(escenas, orient, dir_frames, salida, cfg, tmp, fps=24, W=None, H=None
     for i, e in enumerate(escenas):
         entradas += ["-i", str(e["audio"])]
         filtros.append(f"[{i}:a]aresample=44100,apad,atrim=0:{e['frames'] / fps:.4f}[a{i}]")
-    filtros.append("".join(f"[a{i}]" for i in range(len(escenas))) + f"concat=n={len(escenas)}:v=0:a=1[aout]")
+    filtros.append("".join(f"[a{i}]" for i in range(len(escenas))) + f"concat=n={len(escenas)}:v=0:a=1[voz]")
+    # fondo: rumor grave de cabina muy bajito, para que el vídeo no suene "vacío"
+    total = sum(e["frames"] for e in escenas) / fps
+    filtros.append(f"anoisesrc=color=brown:amplitude=0.7:r=44100,lowpass=f=300,highpass=f=40,volume=0.15,"
+                   f"atrim=0:{total:.3f},afade=t=in:d=1,afade=t=out:st={max(total - 1.5, 0):.3f}:d=1.5[ruido]")
+    filtros.append("[voz][ruido]amix=inputs=2:duration=first:normalize=0[aout]")
     audio = tmp / f"audio_{orient}.m4a"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *entradas, "-filter_complex", ";".join(filtros),
                     "-map", "[aout]", "-c:a", "aac", "-b:a", "160k", str(audio)], check=True)

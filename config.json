@@ -134,24 +134,18 @@
     "accidente",
     {
       "manana": "general",
-      "tarde": "legendarios"
+      "tarde": "aerodinamica"
     },
-    "aerodinamica",
+    "accidente",
     {
-      "manana": "general",
-      "tarde": "supervivencia"
+      "manana": "supervivencia",
+      "tarde": "aerodinamica"
     },
+    "accidente",
     {
       "manana": "legendarios",
       "tarde": "general"
     },
-    {
-      "manana": "supervivencia",
-      "tarde": "general"
-    },
-    {
-      "manana": "general",
-      "tarde": "legendarios"
-    }
+    "accidente"
   ]
 }

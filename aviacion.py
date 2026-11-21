@@ -181,10 +181,11 @@ def elegir(estado):
     dia = CFG["calendario_aviacion"][dt.date.today().weekday()]
     categoria = dia[turno()] if isinstance(dia, dict) else dia
     categoria = categoria_por_rendimiento(estado, categoria)
-    libres = [t for t in TEMAS[categoria] if t["id"] not in estado["usados"]]
+    usado = lambda t: t["id"] in estado["usados"] or t["id"].rsplit("-", 1)[0] in estado["usados"]
+    libres = [t for t in TEMAS[categoria] if not usado(t)]
     if len(libres) <= 2:
         ampliar_temas(estado, categoria)
-        libres = [t for t in TEMAS[categoria] if t["id"] not in estado["usados"]]
+        libres = [t for t in TEMAS[categoria] if not usado(t)]
     if not libres:  # se acabó la lista: vuelve a empezar
         estado["usados"] = [u for u in estado["usados"] if u not in {t["id"] for t in TEMAS[categoria]}]
         libres = TEMAS[categoria]
@@ -223,6 +224,20 @@ NORMAS (obligatorias):
 """
 
 
+GUIA_CATEGORIA = {
+    "accidente": """ESTILO ACCIDENTE: cuéntalo como una historia con tensión, en orden: quiénes eran y adónde iban
+(toma "globo" con la ruta), el despegue y el vuelo normal, la primera señal de que algo va mal, la emergencia
+(tomas "emergencia", "motor" con estado apagado o fuego, tormenta si la hubo), y en la parte de la investigación
+"rayos_x" con la pieza culpable en rojo y tarjetas con las horas clave ("17:42"). Nunca muestres el impacto.""",
+    "aerodinamica": """ESTILO PRINCIPIOS DE VUELO: explicación SENCILLA para cualquier persona, sin fórmulas ni palabras
+técnicas sin explicar, con comparaciones de la vida diaria (la mano por la ventanilla del coche, un ventilador...).
+Corto y claro: 50 a 90 segundos. Usa "ala_flujo", "heli_rotor", "heli_estacionario", "rayos_x" y "comparacion".""",
+    "general": "ESTILO CURIOSIDAD: un hecho o historia de la aviación contado con ritmo, con el dato más sorprendente al principio.",
+    "legendarios": "ESTILO AVIÓN LEGENDARIO: por qué es especial, su historia y sus récords, con tomas de vuelo espectaculares.",
+    "supervivencia": "ESTILO SUPERVIVENCIA: historia real con tensión y final de esperanza, centrada en lo que hicieron bien las personas.",
+}
+
+
 def cuando_siguiente():
     return "hoy a las 15:00" if turno() == "manana" else "mañana a primera hora"
 
@@ -246,6 +261,7 @@ def escribir_guion(categoria, tema, parte, total, texto, urls):
 unas 150-200 si el tema es sencillo, hasta 440 si es una historia con mucho que contar) para el canal
 de aviones y helicópteros "{CFG['canal']}". Tema: {tema['titulo']}{titulo_parte}. Categoría: {categoria}.
 {serie}
+{GUIA_CATEGORIA.get(categoria, '')}
 {NORMAS_AV.format(constantes=json.dumps(CFG['constantes']))}
 FUENTES:
 {texto[:28000]}
