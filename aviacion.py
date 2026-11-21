@@ -751,6 +751,38 @@ def asegurar_longitud(g, texto, previo=None):
     raise RuntimeError(f"No publico: el guion no tiene una duración válida ({palabras_guion(g)} palabras)")
 
 
+def quitar_cifras(g, error):
+    """Elimina las frases, tarjetas y rótulos que contienen las cifras que no se han podido verificar."""
+    import re
+    malas = re.findall(r"'([^']+)'", error.split(":", 1)[-1])
+    if not malas:
+        raise RuntimeError(f"No publico: {error}")
+    tiene = lambda txt: any(m in (txt or "") for m in malas)
+    def limpiar(txt):
+        frases = re.split(r"(?<=[.!?…])\s+", txt or "")
+        return " ".join(f for f in frases if not tiene(f)).strip()
+    for e in g["escenas"]:
+        e["narracion"] = limpiar(e.get("narracion", ""))
+        if tiene((e.get("tarjeta") or {}).get("titulo")) or tiene((e.get("tarjeta") or {}).get("etiqueta")):
+            e.pop("tarjeta", None)
+        e["etiquetas"] = [x for x in e.get("etiquetas") or [] if not tiene(x.get("texto"))]
+        e["comparacion"] = [x for x in e.get("comparacion") or [] if not tiene(x.get("titulo")) and not tiene(x.get("texto"))] or None
+        if tiene(e.get("rotulo")):
+            e["rotulo"] = ""
+    g["escenas"] = [e for e in g["escenas"] if e["narracion"]]
+    g["escenas"][-1]["cierre"] = True
+    for k in ("descripcion", "texto_post"):
+        g[k] = limpiar(g.get(k, ""))
+    for k in ("titulo_youtube", "titulo_post"):
+        if tiene(g.get(k)):
+            for m in malas:
+                g[k] = g[k].replace(m, "").replace("  ", " ").strip()
+    log(f"Quitadas las frases con cifras sin respaldo: {malas}")
+    if palabras_guion(g) < MIN_PALABRAS * 0.8:
+        raise RuntimeError(f"No publico: sin esas cifras el guion queda demasiado corto ({error})")
+    return g
+
+
 def fase_guion():
     """Elige tema, escribe y verifica el guion, genera las voces y la lista de tomas 3D."""
     estado = leer_estado()
@@ -785,7 +817,9 @@ def fase_guion():
                     log("La corrección recortó el guion; se vuelve a intentar sobre el anterior")
                     g = anterior
     else:
-        raise RuntimeError(f"No publico: {ultimo}")
+        # último recurso: quitar las frases con cifras sin respaldo en vez de no publicar
+        g = quitar_cifras(g, str(ultimo))
+        verificar_av(g, texto)
     if not longitud_ok(g):
         raise RuntimeError("No publico: guion con duración no válida")
     bot.SALIDA.mkdir(exist_ok=True)

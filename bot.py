@@ -363,6 +363,13 @@ def valor_es(n):
         return None
 
 
+def _num_ingles(n):
+    try:
+        return float(n.strip(".,").replace(",", ""))
+    except ValueError:
+        return None
+
+
 def verificar(g, texto):
     fuente = set()
     for n in re.findall(r"\d[\d.,]*\d|\d", texto):
@@ -374,6 +381,14 @@ def verificar(g, texto):
             fuente.add(float(n.replace(",", "")))
         except ValueError:
             pass
+    # "700 millones", "1,2 mil millones", "700 million", "3.5 billion" en la fuente cuentan con su valor completo
+    mult_fuente = [(r"mil\s+millones", 1e9), (r"mill(?:ones|ón)", 1e6), (r"billion", 1e9), (r"million", 1e6),
+                   (r"thousand", 1e3), (r"mil\b", 1e3)]
+    for patron, mult in mult_fuente:
+        for m in re.finditer(r"(\d[\d.,]*)\s*" + patron, texto, flags=re.I):
+            for v in (valor_es(m.group(1)), _num_ingles(m.group(1))):
+                if v is not None:
+                    fuente.add(v * mult)
     fuente |= {float(v) for v in CFG["constantes"].values()}
     calculados = []
     for c in g.get("calculos", []):
