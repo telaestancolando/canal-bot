@@ -5,14 +5,10 @@
     "andes571",
     "a320-737",
     "hudson",
-    "sr71"
+    "sr71",
+    "tenerife-1977"
   ],
-  "pendiente": {
-    "categoria": "accidente",
-    "id": "tenerife-1977",
-    "parte": 2,
-    "ig_parte1": "17959679868296935"
-  },
+  "pendiente": null,
   "publicados": [
     {
       "id": "18148838392576431",
@@ -25,34 +21,35 @@
       "categoria": "general",
       "tema": "boeing-airbus",
       "fecha": "2026-11-18T03:42:33.371019",
-      "score": 0
+      "score": 1
     },
     {
       "id": "18385174099239865",
       "categoria": "aerodinamica",
       "tema": "sustentacion",
       "fecha": "2026-11-18T15:18:32.818775",
-      "score": 5
+      "score": 6
     },
     {
       "id": "18116111890872792",
       "categoria": "aerodinamica",
       "tema": "sustentacion",
       "fecha": "2026-11-19T02:55:55.104665",
-      "score": 0
+      "score": 1
     },
     {
       "id": "17967588402241943",
       "categoria": "supervivencia",
       "tema": "andes571",
       "fecha": "2026-11-19T14:53:23.301715",
-      "score": 1
+      "score": 2
     },
     {
       "id": "18136503403747245",
       "categoria": "general",
       "tema": "a320-737",
-      "fecha": "2026-11-20T15:33:54.982886"
+      "fecha": "2026-11-20T15:33:54.982886",
+      "score": 4
     },
     {
       "id": "17955066312049403",
@@ -71,6 +68,12 @@
       "categoria": "accidente",
       "tema": "tenerife-1977",
       "fecha": "2026-11-22T02:39:55.617260"
+    },
+    {
+      "id": "17968956768208490",
+      "categoria": "accidente",
+      "tema": "tenerife-1977",
+      "fecha": "2026-11-22T14:20:31.475880"
     }
   ]
 }
