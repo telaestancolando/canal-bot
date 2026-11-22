@@ -7,7 +7,12 @@
     "hudson",
     "sr71"
   ],
-  "pendiente": null,
+  "pendiente": {
+    "categoria": "accidente",
+    "id": "tenerife-1977",
+    "parte": 2,
+    "ig_parte1": "17959679868296935"
+  },
   "publicados": [
     {
       "id": "18148838392576431",
@@ -60,6 +65,12 @@
       "categoria": "legendarios",
       "tema": "sr71",
       "fecha": "2026-11-21T15:30:10.437249"
+    },
+    {
+      "id": "17959679868296935",
+      "categoria": "accidente",
+      "tema": "tenerife-1977",
+      "fecha": "2026-11-22T02:39:55.617260"
     }
   ]
 }
