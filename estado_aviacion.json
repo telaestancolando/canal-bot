@@ -7,7 +7,8 @@
     "hudson",
     "sr71",
     "tenerife-1977",
-    "gimli"
+    "gimli",
+    "ba9"
   ],
   "pendiente": null,
   "publicados": [
@@ -22,7 +23,7 @@
       "categoria": "general",
       "tema": "boeing-airbus",
       "fecha": "2026-11-18T03:42:33.371019",
-      "score": 1
+      "score": 2
     },
     {
       "id": "18385174099239865",
@@ -63,7 +64,8 @@
       "id": "18047619437827710",
       "categoria": "legendarios",
       "tema": "sr71",
-      "fecha": "2026-11-21T15:30:10.437249"
+      "fecha": "2026-11-21T15:30:10.437249",
+      "score": 126
     },
     {
       "id": "17959679868296935",
@@ -82,6 +84,12 @@
       "categoria": "supervivencia",
       "tema": "gimli",
       "fecha": "2026-11-23T02:51:44.630085"
+    },
+    {
+      "id": "18178618855489166",
+      "categoria": "supervivencia",
+      "tema": "ba9",
+      "fecha": "2026-11-23T15:07:05.468910"
     }
   ]
 }
