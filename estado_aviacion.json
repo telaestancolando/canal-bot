@@ -6,7 +6,8 @@
     "a320-737",
     "hudson",
     "sr71",
-    "tenerife-1977"
+    "tenerife-1977",
+    "gimli"
   ],
   "pendiente": null,
   "publicados": [
@@ -42,7 +43,7 @@
       "categoria": "supervivencia",
       "tema": "andes571",
       "fecha": "2026-11-19T14:53:23.301715",
-      "score": 2
+      "score": 3
     },
     {
       "id": "18136503403747245",
@@ -55,7 +56,8 @@
       "id": "17955066312049403",
       "categoria": "supervivencia",
       "tema": "hudson",
-      "fecha": "2026-11-21T02:44:49.387253"
+      "fecha": "2026-11-21T02:44:49.387253",
+      "score": 62
     },
     {
       "id": "18047619437827710",
@@ -74,6 +76,12 @@
       "categoria": "accidente",
       "tema": "tenerife-1977",
       "fecha": "2026-11-22T14:20:31.475880"
+    },
+    {
+      "id": "18201355768389185",
+      "categoria": "supervivencia",
+      "tema": "gimli",
+      "fecha": "2026-11-23T02:51:44.630085"
     }
   ]
 }
