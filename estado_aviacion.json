@@ -8,7 +8,8 @@
     "sr71",
     "tenerife-1977",
     "gimli",
-    "ba9"
+    "ba9",
+    "aloha243"
   ],
   "pendiente": null,
   "publicados": [
@@ -44,7 +45,7 @@
       "categoria": "supervivencia",
       "tema": "andes571",
       "fecha": "2026-11-19T14:53:23.301715",
-      "score": 3
+      "score": 4
     },
     {
       "id": "18136503403747245",
@@ -58,20 +59,21 @@
       "categoria": "supervivencia",
       "tema": "hudson",
       "fecha": "2026-11-21T02:44:49.387253",
-      "score": 62
+      "score": 64
     },
     {
       "id": "18047619437827710",
       "categoria": "legendarios",
       "tema": "sr71",
       "fecha": "2026-11-21T15:30:10.437249",
-      "score": 126
+      "score": 129
     },
     {
       "id": "17959679868296935",
       "categoria": "accidente",
       "tema": "tenerife-1977",
-      "fecha": "2026-11-22T02:39:55.617260"
+      "fecha": "2026-11-22T02:39:55.617260",
+      "score": 55
     },
     {
       "id": "17968956768208490",
@@ -90,6 +92,12 @@
       "categoria": "supervivencia",
       "tema": "ba9",
       "fecha": "2026-11-23T15:07:05.468910"
+    },
+    {
+      "id": "17908251930353884",
+      "categoria": "supervivencia",
+      "tema": "aloha243",
+      "fecha": "2026-11-24T02:49:38.516822"
     }
   ]
 }
