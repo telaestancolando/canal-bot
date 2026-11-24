@@ -215,26 +215,25 @@ def gemini(prompt):
     # Plan gratuito: si un modelo da 429 (cupo) o tarda demasiado, se pasa al siguiente.
     # Si el cupo DIARIO está agotado, se salta directamente al respaldo.
     # Cada modelo tiene su propio cupo diario gratuito: se van probando uno tras otro.
-    modelos = [CFG["modelo_gemini"], "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash-lite",
-               "gemini-2.0-flash", "gemma-3-27b-it"]
+    # Cada modelo tiene su propio cupo: se van probando uno tras otro. Google retira modelos a menudo:
+    # los que dan 404 se saltan solos. La lista se puede cambiar en config.json -> "modelos_gemini".
+    modelos = CFG.get("modelos_gemini") or [CFG.get("modelo_gemini", "gemini-flash-latest"), "gemini-3.8-flash",
+                                            "gemini-3.7-flash", "gemini-3.6-flash", "gemini-flash-latest",
+                                            "gemini-flash-lite-latest"]
     vistos = []
-    for modelo in [m for m in modelos if not (m in vistos or vistos.append(m))]:
+    for modelo in [m for m in modelos if m and not (m in vistos or vistos.append(m))]:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent"
-        cuerpo = body
-        if modelo.startswith("gemma"):  # Gemma no admite el modo JSON: se pide en el texto
-            cuerpo = {"contents": [{"parts": [{"text": prompt + "\n\nResponde SOLO con el JSON, sin nada más."}]}],
-                      "generationConfig": {"temperature": 0.7}}
-        for intento in range(2):
+        for intento in range(3):
             try:
-                r = requests.post(url, json=cuerpo, timeout=300,
+                r = requests.post(url, json=body, timeout=300,
                                   headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]})
                 if r.status_code == 200:
                     return extraer_json(r.json()["candidates"][0]["content"]["parts"][0]["text"])
                 log("Gemini", modelo, r.status_code, r.text[:160])
-                if (r.status_code == 429 and "PerDay" in r.text) or r.status_code in (400, 404):
+                if (r.status_code == 429 and "PerDay" in r.text) or r.status_code in (400, 403, 404):
                     break  # cupo diario agotado o modelo no disponible: siguiente modelo
-                time.sleep(65 if r.status_code == 429 else 15)
-            except (requests.exceptions.RequestException, KeyError, ValueError) as ex:
+                time.sleep(65 if r.status_code == 429 else 25 * (intento + 1))  # 503 = saturado: esperar
+            except (requests.exceptions.RequestException, KeyError, ValueError, IndexError) as ex:
                 log("Gemini", modelo, "falló:", str(ex)[:160])
                 time.sleep(10)
     log("Gemini sin cupo: uso el modelo de respaldo")

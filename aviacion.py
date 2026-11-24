@@ -784,6 +784,20 @@ Devuelve el JSON completo."""
     return normalizar_guion(bot.gemini(p))
 
 
+def recortar_o_aceptar(g):
+    """Último recurso antes de no publicar: si es largo se quitan escenas del final (manteniendo el cierre);
+    si es algo corto pero tiene contenido, se acepta (mejor un vídeo de 40 s que ninguno)."""
+    esc = g["escenas"]
+    while palabras_guion(g) > MAX_PALABRAS and len(esc) > MIN_ESCENAS:
+        esc.pop(-2 if len(esc) > 1 else -1)
+    if esc:
+        esc[-1]["cierre"] = True
+    if palabras_guion(g) >= 90 and len(esc) >= 3:
+        log(f"Guion aceptado con {palabras_guion(g)} palabras y {len(esc)} escenas")
+        return g
+    raise RuntimeError(f"No publico: guion demasiado corto ({palabras_guion(g)} palabras)")
+
+
 def asegurar_longitud(g, texto, previo=None):
     for _ in range(2):
         if longitud_ok(g):
@@ -797,7 +811,7 @@ def asegurar_longitud(g, texto, previo=None):
         return g
     if previo is not None and longitud_ok(previo):
         return previo
-    raise RuntimeError(f"No publico: el guion no tiene una duración válida ({palabras_guion(g)} palabras)")
+    return recortar_o_aceptar(g)
 
 
 def quitar_cifras(g, error):
@@ -827,7 +841,7 @@ def quitar_cifras(g, error):
             for m in malas:
                 g[k] = g[k].replace(m, "").replace("  ", " ").strip()
     log(f"Quitadas las frases con cifras sin respaldo: {malas}")
-    if palabras_guion(g) < MIN_PALABRAS * 0.8:
+    if palabras_guion(g) < 90:
         raise RuntimeError(f"No publico: sin esas cifras el guion queda demasiado corto ({error})")
     return g
 
@@ -870,7 +884,7 @@ def fase_guion():
         g = quitar_cifras(g, str(ultimo))
         verificar_av(g, texto)
     if not longitud_ok(g):
-        raise RuntimeError("No publico: guion con duración no válida")
+        g = recortar_o_aceptar(g)
     bot.SALIDA.mkdir(exist_ok=True)
     (bot.SALIDA / "guion.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
     preparar_tareas(g, abs(hash(tema["id"])) + parte * 1000)
