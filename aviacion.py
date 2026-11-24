@@ -711,6 +711,55 @@ def montar_3d(g, dir_frames):
 MIN_ESCENAS, MIN_PALABRAS, MAX_PALABRAS = 4, 130, 470
 
 
+def normalizar_guion(g):
+    """La IA a veces devuelve el JSON con otra forma (escenas como texto, todo dentro de otra clave...).
+    Se arregla aquí para que el resto del bot reciba siempre lo mismo."""
+    if isinstance(g, list):
+        g = {"escenas": g}
+    if not isinstance(g, dict):
+        raise ValueError("La IA no devolvió un guion válido")
+    if "escenas" not in g:
+        for v in g.values():
+            if isinstance(v, dict) and "escenas" in v:
+                g = {**g, **v}
+                break
+    escenas = []
+    for e in g.get("escenas") or []:
+        if isinstance(e, str) and e.strip():
+            escenas.append({"narracion": e.strip(), "toma": "vuelo"})
+        elif isinstance(e, dict):
+            texto = e.get("narracion") or e.get("texto") or e.get("narration") or ""
+            if isinstance(texto, list):
+                texto = " ".join(map(str, texto))
+            if str(texto).strip():
+                e["narracion"] = str(texto).strip()
+                if not isinstance(e.get("tarjeta"), dict):
+                    e.pop("tarjeta", None)
+                if not isinstance(e.get("etiquetas"), list):
+                    e.pop("etiquetas", None)
+                else:
+                    e["etiquetas"] = [x for x in e["etiquetas"] if isinstance(x, dict)]
+                if not isinstance(e.get("params"), dict):
+                    e.pop("params", None)
+                escenas.append(e)
+    g["escenas"] = escenas
+    for k in ("titulo_youtube", "titulo_post", "texto_post", "descripcion", "pregunta_comentarios"):
+        if not isinstance(g.get(k), str):
+            g[k] = " ".join(map(str, g[k])) if isinstance(g.get(k), list) else str(g.get(k) or "")
+    if not g["titulo_youtube"]:
+        g["titulo_youtube"] = g["titulo_post"] or "Cabina Abierta"
+    if not g["titulo_post"]:
+        g["titulo_post"] = g["titulo_youtube"]
+    for k in ("hashtags", "tags", "palabras_clave", "calculos"):
+        if not isinstance(g.get(k), list):
+            g[k] = []
+    if not isinstance(g.get("aeronave"), dict):
+        g["aeronave"] = {"modelo": "a320"}
+    if not isinstance(g.get("escenario"), dict):
+        g["escenario"] = {}
+    return g
+
+
 def palabras_guion(g):
     return sum(len((e.get("narracion") or "").split()) for e in g.get("escenas", []))
 
@@ -732,7 +781,7 @@ GUION:
 FUENTES:
 {texto[:24000]}
 Devuelve el JSON completo."""
-    return bot.gemini(p)
+    return normalizar_guion(bot.gemini(p))
 
 
 def asegurar_longitud(g, texto, previo=None):
@@ -797,7 +846,7 @@ def fase_guion():
     if len(texto) < 1500:
         raise RuntimeError(f"Fuentes insuficientes para {tema['id']}")
     ultimo = None
-    g = escribir_guion(categoria, tema, parte, total, texto, urls)
+    g = normalizar_guion(escribir_guion(categoria, tema, parte, total, texto, urls))
     g = asegurar_longitud(g, texto)
     for intento in range(3):
         for e in g["escenas"]:
@@ -810,7 +859,7 @@ def fase_guion():
             log("Verificación fallida, corrigiendo solo esas cifras:", ex)
             if intento < 2:
                 anterior = g
-                g = corregir_guion(g, str(ex), texto)
+                g = normalizar_guion(corregir_guion(g, str(ex), texto))
                 # a veces la corrección devuelve el guion recortado: se recupera la longitud
                 g = asegurar_longitud(g, texto, anterior)
                 if palabras_guion(g) < palabras_guion(anterior) * 0.8:
