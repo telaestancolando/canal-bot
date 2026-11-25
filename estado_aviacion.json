@@ -9,14 +9,10 @@
     "tenerife-1977",
     "gimli",
     "ba9",
-    "aloha243"
+    "aloha243",
+    "af447"
   ],
-  "pendiente": {
-    "categoria": "accidente",
-    "id": "af447",
-    "parte": 2,
-    "ig_parte1": "18111741980351201"
-  },
+  "pendiente": null,
   "publicados": [
     {
       "id": "18148838392576431",
@@ -29,7 +25,7 @@
       "categoria": "general",
       "tema": "boeing-airbus",
       "fecha": "2026-11-18T03:42:33.371019",
-      "score": 2
+      "score": 3
     },
     {
       "id": "18385174099239865",
@@ -50,28 +46,28 @@
       "categoria": "supervivencia",
       "tema": "andes571",
       "fecha": "2026-11-19T14:53:23.301715",
-      "score": 4
+      "score": 5
     },
     {
       "id": "18136503403747245",
       "categoria": "general",
       "tema": "a320-737",
       "fecha": "2026-11-20T15:33:54.982886",
-      "score": 4
+      "score": 5
     },
     {
       "id": "17955066312049403",
       "categoria": "supervivencia",
       "tema": "hudson",
       "fecha": "2026-11-21T02:44:49.387253",
-      "score": 65
+      "score": 67
     },
     {
       "id": "18047619437827710",
       "categoria": "legendarios",
       "tema": "sr71",
       "fecha": "2026-11-21T15:30:10.437249",
-      "score": 131
+      "score": 132
     },
     {
       "id": "17959679868296935",
@@ -92,13 +88,14 @@
       "categoria": "supervivencia",
       "tema": "gimli",
       "fecha": "2026-11-23T02:51:44.630085",
-      "score": 80
+      "score": 81
     },
     {
       "id": "18178618855489166",
       "categoria": "supervivencia",
       "tema": "ba9",
-      "fecha": "2026-11-23T15:07:05.468910"
+      "fecha": "2026-11-23T15:07:05.468910",
+      "score": 114
     },
     {
       "id": "17908251930353884",
@@ -111,6 +108,12 @@
       "categoria": "accidente",
       "tema": "af447",
       "fecha": "2026-11-25T03:04:25.311547"
+    },
+    {
+      "id": "18111275380958470",
+      "categoria": "accidente",
+      "tema": "af447",
+      "fecha": "2026-11-25T15:22:26.371070"
     }
   ]
 }
