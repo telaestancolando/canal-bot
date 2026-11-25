@@ -132,20 +132,11 @@
   "modo_canal": "aviacion",
   "calendario_aviacion": [
     "accidente",
-    {
-      "manana": "general",
-      "tarde": "aerodinamica"
-    },
     "accidente",
-    {
-      "manana": "supervivencia",
-      "tarde": "aerodinamica"
-    },
     "accidente",
-    {
-      "manana": "legendarios",
-      "tarde": "general"
-    },
+    "accidente",
+    "accidente",
+    "accidente",
     "accidente"
   ]
 }

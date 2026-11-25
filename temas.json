@@ -320,6 +320,166 @@
     "es:Vuelo 1907 de Gol Transportes Aéreos",
     "en:Gol Transportes Aéreos Flight 1907"
    ]
+  },
+  {
+   "id": "jal516",
+   "titulo": "JAL 516: el A350 que ardió en Haneda",
+   "fuentes": [
+    "es:Accidente del aeropuerto de Haneda de 2024",
+    "en:2024 Haneda Airport runway collision"
+   ]
+  },
+  {
+   "id": "swissair111",
+   "titulo": "Swissair 111: humo en la cabina sobre el Atlántico",
+   "fuentes": [
+    "es:Vuelo 111 de Swissair",
+    "en:Swissair Flight 111"
+   ]
+  },
+  {
+   "id": "pan-am-214",
+   "titulo": "Pan Am 214: el rayo que tumbó un avión",
+   "fuentes": [
+    "es:Vuelo 214 de Pan Am",
+    "en:Pan Am Flight 214"
+   ]
+  },
+  {
+   "id": "ba38",
+   "titulo": "British Airways 38: los motores que se quedaron sin combustible helado",
+   "fuentes": [
+    "es:Vuelo 38 de British Airways",
+    "en:British Airways Flight 38"
+   ]
+  },
+  {
+   "id": "china-airlines-006",
+   "titulo": "China Airlines 006: caída en picado y recuperación",
+   "fuentes": [
+    "es:Vuelo 006 de China Airlines",
+    "en:China Airlines Flight 006"
+   ]
+  },
+  {
+   "id": "american-1420",
+   "titulo": "American 1420: aterrizar en plena tormenta",
+   "fuentes": [
+    "es:Vuelo 1420 de American Airlines",
+    "en:American Airlines Flight 1420"
+   ]
+  },
+  {
+   "id": "west-caribbean-708",
+   "titulo": "West Caribbean 708: la pérdida a gran altitud",
+   "fuentes": [
+    "es:Vuelo 708 de West Caribbean Airways",
+    "en:West Caribbean Airways Flight 708"
+   ]
+  },
+  {
+   "id": "transasia235",
+   "titulo": "TransAsia 235: el motor equivocado",
+   "fuentes": [
+    "es:Vuelo 235 de TransAsia Airways",
+    "en:TransAsia Airways Flight 235"
+   ]
+  },
+  {
+   "id": "aeroflot593",
+   "titulo": "Aeroflot 593: el niño en los mandos",
+   "fuentes": [
+    "es:Vuelo 593 de Aeroflot",
+    "en:Aeroflot Flight 593"
+   ]
+  },
+  {
+   "id": "partnair394",
+   "titulo": "Partnair 394: las piezas falsas",
+   "fuentes": [
+    "es:Vuelo 394 de Partnair",
+    "en:Partnair Flight 394"
+   ]
+  },
+  {
+   "id": "air-canada-797",
+   "titulo": "Air Canada 797: fuego en el baño",
+   "fuentes": [
+    "es:Vuelo 797 de Air Canada",
+    "en:Air Canada Flight 797"
+   ]
+  },
+  {
+   "id": "saudia163",
+   "titulo": "Saudia 163: el incendio tras aterrizar",
+   "fuentes": [
+    "es:Vuelo 163 de Saudia",
+    "en:Saudia Flight 163"
+   ]
+  },
+  {
+   "id": "national-airlines-102",
+   "titulo": "National Airlines 102: la carga que se movió",
+   "fuentes": [
+    "es:Vuelo 102 de National Airlines",
+    "en:National Airlines Flight 102"
+   ]
+  },
+  {
+   "id": "yeti691",
+   "titulo": "Yeti Airlines 691: las palancas equivocadas",
+   "fuentes": [
+    "es:Vuelo 691 de Yeti Airlines",
+    "en:Yeti Airlines Flight 691"
+   ]
+  },
+  {
+   "id": "lufthansa2904",
+   "titulo": "Lufthansa 2904: viento cruzado en Varsovia",
+   "fuentes": [
+    "es:Vuelo 2904 de Lufthansa",
+    "en:Lufthansa Flight 2904"
+   ]
+  },
+  {
+   "id": "lot007",
+   "titulo": "LOT 007: el motor que se deshizo",
+   "fuentes": [
+    "es:Vuelo 007 de LOT Polish Airlines",
+    "en:LOT Polish Airlines Flight 7"
+   ]
+  },
+  {
+   "id": "varig254",
+   "titulo": "Varig 254: perdidos sobre la selva amazónica",
+   "fuentes": [
+    "es:Vuelo 254 de Varig",
+    "en:Varig Flight 254"
+   ]
+  },
+  {
+   "id": "tame120",
+   "titulo": "TAME 120: niebla en los Andes",
+   "fuentes": [
+    "es:Vuelo 120 de TAME",
+    "en:TAME Flight 120"
+   ]
+  },
+  {
+   "id": "cubana972",
+   "titulo": "Cubana 972: el despegue de La Habana",
+   "fuentes": [
+    "es:Vuelo 972 de Cubana de Aviación",
+    "en:Cubana de Aviación Flight 972"
+   ]
+  },
+  {
+   "id": "chopper-g-redl",
+   "titulo": "Super Puma G-REDL: el rotor que se soltó en el mar del Norte",
+   "fuentes": [
+    "es:Accidente del Eurocopter AS332 en 2009 en el mar del Norte",
+    "en:2009 North Sea Eurocopter AS332 crash"
+   ]
   }
  ],
  "aerodinamica": [

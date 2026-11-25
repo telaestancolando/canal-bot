@@ -457,7 +457,7 @@ def voz(texto, locutor, destino):
 async def _tts_palabras(texto, voz, destino):
     import edge_tts
     palabras = []
-    com = edge_tts.Communicate(texto, voz, rate="+8%", boundary="WordBoundary")
+    com = edge_tts.Communicate(texto, voz, rate="+4%", pitch="-3Hz", boundary="WordBoundary")
     with open(destino, "wb") as fh:
         async for ch in com.stream():
             if ch["type"] == "audio":
@@ -466,6 +466,18 @@ async def _tts_palabras(texto, voz, destino):
                 t0 = ch["offset"] / 1e7
                 palabras.append([ch["text"], t0, t0 + ch["duration"] / 1e7])
     return palabras
+
+
+def pulir_voz(destino):
+    """Voz más 'de documental': quita graves sucios, comprime un poco y normaliza el volumen.
+    No cambia la duración, así que los tiempos de las palabras siguen valiendo."""
+    tmp = str(destino) + ".tmp.mp3"
+    r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(destino), "-af",
+                        "highpass=f=70,equalizer=f=180:t=q:w=1:g=2,equalizer=f=3500:t=q:w=1.5:g=2,"
+                        "acompressor=threshold=-20dB:ratio=3:attack=10:release=150,loudnorm=I=-16:TP=-1.5:LRA=9",
+                        "-ar", "44100", "-b:a", "192k", tmp])
+    if r.returncode == 0:
+        os.replace(tmp, destino)
 
 
 def voz_palabras(texto, destino):
@@ -482,6 +494,7 @@ def voz_palabras(texto, destino):
             time.sleep(5)
     if pal is None:
         raise RuntimeError("No se pudo generar la voz")
+    pulir_voz(destino)
     d = duracion(destino)
     originales = texto.split()
     if not pal or abs(len(pal) - len(originales)) > max(2, len(originales) * 0.15):

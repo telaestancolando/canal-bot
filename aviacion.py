@@ -146,12 +146,75 @@ def categoria_por_rendimiento(estado, por_defecto):
     return eleccion
 
 
+# ---------------------------------------------------------------- Público: comentarios y peticiones
+def leer_comentarios(media_id, maximo=80):
+    """Textos de los comentarios de una publicación (sin nombres de usuario)."""
+    base, token = ig_base_token()
+    if not token or not media_id:
+        return []
+    textos, url = [], f"{base}/{media_id}/comments"
+    params = {"fields": "text", "limit": 50, "access_token": token}
+    try:
+        while url and len(textos) < maximo:
+            r = requests.get(url, params=params, timeout=30).json()
+            textos += [c.get("text", "") for c in r.get("data", []) if c.get("text")]
+            url, params = r.get("paging", {}).get("next"), None
+    except Exception as ex:
+        log("No se pudieron leer comentarios:", ex)
+    return textos[:maximo]
+
+
+def _norm(t):
+    import unicodedata
+    t = unicodedata.normalize("NFD", t.lower())
+    return "".join(ch for ch in t if unicodedata.category(ch) != "Mn")
+
+
+def registrar_peticiones(estado):
+    """Lee los comentarios de los últimos vídeos y cuenta qué accidentes pide la gente.
+    Lo que no está en la lista se guarda para proponer temas nuevos. Todo automático."""
+    import re
+    vistos = set(estado.setdefault("comentarios_vistos", []))
+    pedidos = estado.setdefault("pedidos", {})
+    sueltos = estado.setdefault("peticiones_libres", [])
+    claves = {}
+    for t in TEMAS.get("accidente", []):
+        palabras = set()
+        for f in t.get("fuentes", []):
+            txt = _norm(f.split(":", 1)[-1])
+            palabras |= {w for w in re.findall(r"[a-z0-9]+", txt) if len(w) >= 3 and w not in
+                         {"vuelo", "flight", "airlines", "air", "accidente", "del", "los", "las", "crash", "de"}}
+        palabras |= {w for w in re.findall(r"[a-z0-9]+", _norm(t["id"])) if len(w) >= 3}
+        claves[t["id"]] = palabras
+    for p in estado.get("publicados", [])[-12:]:
+        for txt in leer_comentarios(p["id"]):
+            import hashlib
+            h = hashlib.md5((p["id"] + txt).encode()).hexdigest()[:16]
+            if h in vistos:
+                continue
+            vistos.add(h)
+            n = _norm(txt)
+            tokens = set(re.findall(r"[a-z0-9]+", n))
+            mejor = max(claves, key=lambda k: len(claves[k] & tokens), default=None)
+            if mejor and len(claves[mejor] & tokens) >= 1 and any(len(w) >= 4 or w.isdigit() for w in claves[mejor] & tokens):
+                if mejor not in estado.get("usados", []):
+                    pedidos[mejor] = pedidos.get(mejor, 0) + 1
+            elif re.search(r"\b(vuelo|accidente|flight|haz|hagan|habla|cuenta|podrias|podrías)\b", n) and len(txt) < 200:
+                sueltos.append(txt[:200])
+    estado["comentarios_vistos"] = list(vistos)[-3000:]
+    estado["peticiones_libres"] = sueltos[-60:]
+    if pedidos:
+        log("Peticiones del público:", dict(sorted(pedidos.items(), key=lambda x: -x[1])[:8]))
+
+
 def ampliar_temas(estado, categoria):
     """Si una categoría se queda sin temas, se piden nuevos a Gemini y se comprueba que Wikipedia los tiene."""
     existentes = [t["titulo"] for t in TEMAS[categoria]]
     p = f"""Propón 6 temas NUEVOS para vídeos de un canal de aviones y helicópteros, categoría "{categoria}".
 Que interesen al gran público de España y Latinoamérica y que tengan artículo en Wikipedia.
+Evita casos centrados en el suicidio de un piloto o en atentados terroristas.
 No repitas ninguno de estos: {existentes}
+{('Ten en cuenta lo que pide el público en los comentarios (prioriza lo que se repite): ' + json.dumps(estado.get('peticiones_libres', [])[-40:], ensure_ascii=False)) if categoria == 'accidente' else ''}
 Devuelve JSON: {{"temas": [{{"id": "corto-sin-espacios", "titulo": "título atractivo",
 "fuentes": ["es:Título exacto en Wikipedia en español", "en:Exact English Wikipedia title"]}}]}}"""
     try:
@@ -180,7 +243,8 @@ def elegir(estado):
                 return pend["categoria"], t, pend["parte"], partes_de(pend["categoria"], t)
     dia = CFG["calendario_aviacion"][dt.date.today().weekday()]
     categoria = dia[turno()] if isinstance(dia, dict) else dia
-    categoria = categoria_por_rendimiento(estado, categoria)
+    if categoria != "accidente":  # los accidentes son el formato estrella: no se cambian
+        categoria = categoria_por_rendimiento(estado, categoria)
     usado = lambda t: t["id"] in estado["usados"] or t["id"].rsplit("-", 1)[0] in estado["usados"]
     libres = [t for t in TEMAS[categoria] if not usado(t)]
     if len(libres) <= 2:
@@ -190,6 +254,13 @@ def elegir(estado):
         estado["usados"] = [u for u in estado["usados"] if u not in {t["id"] for t in TEMAS[categoria]}]
         libres = TEMAS[categoria]
     tema = libres[0]
+    pedidos = estado.get("pedidos", {})
+    if pedidos:
+        favorito = max(libres, key=lambda t: pedidos.get(t["id"], 0))
+        if pedidos.get(favorito["id"], 0) > 0:
+            log(f"Tema pedido por el público ({pedidos[favorito['id']]} peticiones): {favorito['titulo']}")
+            tema = favorito
+            pedidos.pop(favorito["id"], None)
     return categoria, tema, 1, partes_de(categoria, tema)
 
 
@@ -224,8 +295,20 @@ NORMAS (obligatorias):
 """
 
 
+INTERACCION = {
+    ("accidente", 1): """INTERACCIÓN (parte 1): termina con suspense y una pregunta ABIERTA al público, sin dar opciones,
+por ejemplo "¿Tú qué crees que falló en esa cabina? Te leo en comentarios; la respuesta, en la parte 2".""",
+    ("accidente", 2): """INTERACCIÓN (parte 2): la última escena invita a pedir el próximo caso: "¿Qué accidente quieres
+que contemos? Escríbelo en los comentarios: los más pedidos salen primero." (es verdad: el bot los lee).""",
+    ("accidente", 0): """INTERACCIÓN: termina invitando a pedir el próximo caso en comentarios ("los más pedidos salen primero").""",
+}
+
 GUIA_CATEGORIA = {
-    "accidente": """ESTILO ACCIDENTE: cuéntalo como una historia con tensión, en orden: quiénes eran y adónde iban
+    "accidente": """ESTILO ACCIDENTE (el formato que mejor funciona en el canal, como el del AF447): narración en
+presente y en segunda persona en los momentos clave ("son las 2 de la madrugada, estás a 11.000 metros..."),
+ritmo de thriller, ambientación nocturna o de tormenta si la historia lo permite, frases cortas, la hora en
+tarjetas ("02:10"), lo que se oía y se veía en la cabina según las fuentes, y la causa contada de forma que
+cualquiera la entienda. Cuéntalo como una historia con tensión, en orden: quiénes eran y adónde iban
 (toma "globo" con la ruta), el despegue y el vuelo normal, la primera señal de que algo va mal, la emergencia
 (tomas "emergencia", "motor" con estado apagado o fuego, tormenta si la hubo), y en la parte de la investigación
 "rayos_x" con la pieza culpable en rojo y tarjetas con las horas clave ("17:42"). Nunca muestres el impacto.""",
@@ -242,7 +325,7 @@ def cuando_siguiente():
     return "hoy a las 15:00" if turno() == "manana" else "mañana a primera hora"
 
 
-def escribir_guion(categoria, tema, parte, total, texto, urls):
+def escribir_guion(categoria, tema, parte, total, texto, urls, comentarios=None):
     if total > 1:
         enfoque = tema.get("partes", [None, None])[parte - 1] if "partes" in tema else None
         if categoria == "accidente" and not enfoque:
@@ -257,11 +340,17 @@ def escribir_guion(categoria, tema, parte, total, texto, urls):
         titulo_parte = f" (Parte {parte})"
     else:
         serie, titulo_parte = "Vídeo único, completo.", ""
+    publico = ""
+    if comentarios:
+        publico = ("\nCOMENTARIOS DEL PÚBLICO EN LA PARTE 1 (anónimos): " + json.dumps(comentarios[:40], ensure_ascii=False) +
+                   "\nEn la primera o segunda escena, menciona en una frase natural lo que más gente pensaba que había pasado "
+                   "(\"muchos en los comentarios pensabais que...\") y luego cuenta lo que dice la investigación. Sin nombres de usuario.\n")
     p = f"""Escribe el guion de un vídeo vertical de entre 50 segundos y 3 minutos (150-440 palabras de narración:
 unas 150-200 si el tema es sencillo, hasta 440 si es una historia con mucho que contar) para el canal
 de aviones y helicópteros "{CFG['canal']}". Tema: {tema['titulo']}{titulo_parte}. Categoría: {categoria}.
 {serie}
 {GUIA_CATEGORIA.get(categoria, '')}
+{INTERACCION.get((categoria, parte if total > 1 else 0), '')}{publico}
 {NORMAS_AV.format(constantes=json.dumps(CFG['constantes']))}
 FUENTES:
 {texto[:28000]}
@@ -663,9 +752,23 @@ def preparar_tareas(g, semilla_base):
     esc = g["escenas"]
     esc[-1]["cierre"] = True
     log(f"Vídeo de {sum(e['_frames'] for e in esc) / FPS:.0f} s")
+    import random
+    rnd = random.Random(semilla_base)
+    sol = rnd.randint(40, 320)  # cada vídeo con la luz desde otro ángulo
+    previa, camaras = None, ["lateral", "persecucion", "frontal", "abajo", "arriba"]
     for i, e in enumerate(esc):
         toma = e.get("toma") if e.get("toma") in TOMAS_VALIDAS else "vuelo"
-        escv = dict(g.get("escenario") or {})
+        if g.get("_categoria") == "accidente" and toma == "ala_flujo" and not (e.get("params") or {}).get("perdida"):
+            toma = "emergencia" if i > len(esc) // 2 else "vuelo"
+        if toma == previa:  # nunca dos planos iguales seguidos
+            e.setdefault("params", {})["camara"] = rnd.choice(camaras)
+            if toma in ("pista", "cenital", "rayos_x", "globo", "motor"):
+                toma = rnd.choice(["vuelo", "viraje"])
+        previa = toma
+        if toma in ("vuelo", "viraje", "emergencia") and not (e.get("params") or {}).get("camara"):
+            e.setdefault("params", {})["camara"] = rnd.choice(camaras)
+        escv = {"sol": sol}
+        escv.update(g.get("escenario") or {})
         escv.update(e.get("escenario") or {})
         params = dict(e.get("params") or {})
         if toma == "globo":
@@ -853,6 +956,10 @@ def fase_guion():
         conocidos = {t["id"] for t in TEMAS.get(cat, [])}
         TEMAS.setdefault(cat, []).extend(t for t in lista if t["id"] not in conocidos)
     actualizar_metricas(estado)
+    try:
+        registrar_peticiones(estado)
+    except Exception as ex:
+        log("No se pudieron registrar peticiones:", ex)
     categoria, tema, parte, total = elegir(estado)
     log(f"Turno {turno()} · {categoria} · {tema['titulo']} · parte {parte}/{total}")
     refs = tema["partes_fuentes"][parte - 1] if "partes_fuentes" in tema else tema["fuentes"]
@@ -860,7 +967,11 @@ def fase_guion():
     if len(texto) < 1500:
         raise RuntimeError(f"Fuentes insuficientes para {tema['id']}")
     ultimo = None
-    g = normalizar_guion(escribir_guion(categoria, tema, parte, total, texto, urls))
+    comentarios = []
+    if parte > 1 and (estado.get("pendiente") or {}).get("ig_parte1"):
+        comentarios = leer_comentarios(estado["pendiente"]["ig_parte1"])
+        log(f"{len(comentarios)} comentarios de la parte 1 para el guion")
+    g = normalizar_guion(escribir_guion(categoria, tema, parte, total, texto, urls, comentarios))
     g = asegurar_longitud(g, texto)
     for intento in range(3):
         for e in g["escenas"]:
@@ -887,6 +998,7 @@ def fase_guion():
         g = recortar_o_aceptar(g)
     bot.SALIDA.mkdir(exist_ok=True)
     (bot.SALIDA / "guion.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
+    g["_categoria"] = categoria
     preparar_tareas(g, abs(hash(tema["id"])) + parte * 1000)
     plan = {"g": g, "categoria": categoria, "tema": tema, "parte": parte, "total": total, "urls": urls, "estado": estado}
     (bot.SALIDA / "plan.json").write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
