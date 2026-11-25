@@ -11,7 +11,12 @@
     "ba9",
     "aloha243"
   ],
-  "pendiente": null,
+  "pendiente": {
+    "categoria": "accidente",
+    "id": "af447",
+    "parte": 2,
+    "ig_parte1": "18111741980351201"
+  },
   "publicados": [
     {
       "id": "18148838392576431",
@@ -59,33 +64,35 @@
       "categoria": "supervivencia",
       "tema": "hudson",
       "fecha": "2026-11-21T02:44:49.387253",
-      "score": 64
+      "score": 65
     },
     {
       "id": "18047619437827710",
       "categoria": "legendarios",
       "tema": "sr71",
       "fecha": "2026-11-21T15:30:10.437249",
-      "score": 129
+      "score": 131
     },
     {
       "id": "17959679868296935",
       "categoria": "accidente",
       "tema": "tenerife-1977",
       "fecha": "2026-11-22T02:39:55.617260",
-      "score": 55
+      "score": 57
     },
     {
       "id": "17968956768208490",
       "categoria": "accidente",
       "tema": "tenerife-1977",
-      "fecha": "2026-11-22T14:20:31.475880"
+      "fecha": "2026-11-22T14:20:31.475880",
+      "score": 24
     },
     {
       "id": "18201355768389185",
       "categoria": "supervivencia",
       "tema": "gimli",
-      "fecha": "2026-11-23T02:51:44.630085"
+      "fecha": "2026-11-23T02:51:44.630085",
+      "score": 80
     },
     {
       "id": "18178618855489166",
@@ -98,6 +105,12 @@
       "categoria": "supervivencia",
       "tema": "aloha243",
       "fecha": "2026-11-24T02:49:38.516822"
+    },
+    {
+      "id": "18111741980351201",
+      "categoria": "accidente",
+      "tema": "af447",
+      "fecha": "2026-11-25T03:04:25.311547"
     }
   ]
 }
