@@ -12,7 +12,12 @@
     "aloha243",
     "af447"
   ],
-  "pendiente": null,
+  "pendiente": {
+    "categoria": "accidente",
+    "id": "cubana972",
+    "parte": 2,
+    "ig_parte1": "18164614423553343"
+  },
   "publicados": [
     {
       "id": "18148838392576431",
@@ -53,14 +58,14 @@
       "categoria": "general",
       "tema": "a320-737",
       "fecha": "2026-11-20T15:33:54.982886",
-      "score": 5
+      "score": 6
     },
     {
       "id": "17955066312049403",
       "categoria": "supervivencia",
       "tema": "hudson",
       "fecha": "2026-11-21T02:44:49.387253",
-      "score": 67
+      "score": 68
     },
     {
       "id": "18047619437827710",
@@ -74,34 +79,35 @@
       "categoria": "accidente",
       "tema": "tenerife-1977",
       "fecha": "2026-11-22T02:39:55.617260",
-      "score": 57
+      "score": 60
     },
     {
       "id": "17968956768208490",
       "categoria": "accidente",
       "tema": "tenerife-1977",
       "fecha": "2026-11-22T14:20:31.475880",
-      "score": 24
+      "score": 28
     },
     {
       "id": "18201355768389185",
       "categoria": "supervivencia",
       "tema": "gimli",
       "fecha": "2026-11-23T02:51:44.630085",
-      "score": 81
+      "score": 85
     },
     {
       "id": "18178618855489166",
       "categoria": "supervivencia",
       "tema": "ba9",
       "fecha": "2026-11-23T15:07:05.468910",
-      "score": 114
+      "score": 118
     },
     {
       "id": "17908251930353884",
       "categoria": "supervivencia",
       "tema": "aloha243",
-      "fecha": "2026-11-24T02:49:38.516822"
+      "fecha": "2026-11-24T02:49:38.516822",
+      "score": 76
     },
     {
       "id": "18111741980351201",
@@ -114,6 +120,34 @@
       "categoria": "accidente",
       "tema": "af447",
       "fecha": "2026-11-25T15:22:26.371070"
+    },
+    {
+      "id": "18164614423553343",
+      "categoria": "accidente",
+      "tema": "cubana972",
+      "fecha": "2026-11-26T02:53:41.124369"
     }
+  ],
+  "comentarios_vistos": [
+    "a5f4343e7ed24c00",
+    "75e4558d4070def4",
+    "630ffc9336f37ebe",
+    "e6905cfcac2e5743",
+    "58ecd7c5428c07ac",
+    "156647e4370c205f",
+    "03a4962e299e4d40",
+    "3e6fb1f39e809ddc",
+    "78f56e73583fe1f5",
+    "a8aff36d3ee54c17",
+    "364b34f88894aae4",
+    "17e6b1ccf0ba2c9f",
+    "4690afab9c45594b",
+    "66b77d8e28df98b5",
+    "dfc286f52beea247",
+    "88d302aaeab974d2"
+  ],
+  "pedidos": {},
+  "peticiones_libres": [
+    "En ese vuelo falleció el hijo del famoso publicista argentino Gabriel Dreyfus."
   ]
 }
