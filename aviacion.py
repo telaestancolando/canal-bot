@@ -1079,9 +1079,12 @@ def fase_publicar(dir_frames=None):
             bot.subir_instagram(historia_url, "", media_type="STORIES")
         except Exception as ex:
             log("No se pudo publicar la story:", ex)
-    if CFG.get("youtube_auditado"):
-        yt = bot.youtube()
-        bot.subir_youtube(yt, corto, f"{g['titulo_youtube'][:90]} #Shorts", descripcion, tags_yt)
+    if os.environ.get("YT_REFRESH_TOKEN"):  # se activa solo en cuanto existen las claves de YouTube
+        try:
+            yt = bot.youtube()
+            bot.subir_youtube(yt, corto, f"{g['titulo_youtube'][:90]} #Shorts", descripcion, tags_yt)
+        except Exception as ex:  # un fallo de YouTube nunca debe tumbar lo ya publicado en Instagram
+            log("No se pudo subir a YouTube:", str(ex)[:300])
     # actualizar estado
     if media_id:
         estado.setdefault("publicados", []).append(
