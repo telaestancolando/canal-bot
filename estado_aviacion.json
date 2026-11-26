@@ -13,7 +13,12 @@
     "af447",
     "cubana972"
   ],
-  "pendiente": null,
+  "pendiente": {
+    "categoria": "accidente",
+    "id": "spanair-5022",
+    "parte": 2,
+    "ig_parte1": "18656631658011065"
+  },
   "publicados": [
     {
       "id": "18148838392576431",
@@ -40,7 +45,7 @@
       "categoria": "aerodinamica",
       "tema": "sustentacion",
       "fecha": "2026-11-19T02:55:55.104665",
-      "score": 3
+      "score": 4
     },
     {
       "id": "17967588402241943",
@@ -68,7 +73,7 @@
       "categoria": "legendarios",
       "tema": "sr71",
       "fecha": "2026-11-21T15:30:10.437249",
-      "score": 134
+      "score": 135
     },
     {
       "id": "17959679868296935",
@@ -82,7 +87,7 @@
       "categoria": "accidente",
       "tema": "tenerife-1977",
       "fecha": "2026-11-22T14:20:31.475880",
-      "score": 31
+      "score": 34
     },
     {
       "id": "18201355768389185",
@@ -96,20 +101,21 @@
       "categoria": "supervivencia",
       "tema": "ba9",
       "fecha": "2026-11-23T15:07:05.468910",
-      "score": 124
+      "score": 128
     },
     {
       "id": "17908251930353884",
       "categoria": "supervivencia",
       "tema": "aloha243",
       "fecha": "2026-11-24T02:49:38.516822",
-      "score": 80
+      "score": 81
     },
     {
       "id": "18111741980351201",
       "categoria": "accidente",
       "tema": "af447",
-      "fecha": "2026-11-25T03:04:25.311547"
+      "fecha": "2026-11-25T03:04:25.311547",
+      "score": 687
     },
     {
       "id": "18111275380958470",
@@ -128,28 +134,38 @@
       "categoria": "accidente",
       "tema": "cubana972",
       "fecha": "2026-11-26T15:11:33.092496"
+    },
+    {
+      "id": "18656631658011065",
+      "categoria": "accidente",
+      "tema": "spanair-5022",
+      "fecha": "2026-11-26T23:28:22.560587"
     }
   ],
   "comentarios_vistos": [
-    "156647e4370c205f",
-    "03a4962e299e4d40",
-    "bdc3c0c47a34e8a1",
+    "52be819cd5f2a17e",
+    "36cc5fc192476cd5",
     "a5f4343e7ed24c00",
+    "e6905cfcac2e5743",
     "dfc286f52beea247",
+    "630ffc9336f37ebe",
+    "a8aff36d3ee54c17",
+    "2cb198adbec71af5",
+    "75e4558d4070def4",
+    "156647e4370c205f",
+    "78f56e73583fe1f5",
+    "bf0037103ccd8df5",
+    "be21680d1a8e6280",
+    "364b34f88894aae4",
+    "88d302aaeab974d2",
+    "03a4962e299e4d40",
+    "3e6fb1f39e809ddc",
     "66b77d8e28df98b5",
+    "8328a82808a3aeb5",
+    "bdc3c0c47a34e8a1",
     "58ecd7c5428c07ac",
     "17e6b1ccf0ba2c9f",
-    "e6905cfcac2e5743",
-    "75e4558d4070def4",
-    "a8aff36d3ee54c17",
-    "3e6fb1f39e809ddc",
-    "364b34f88894aae4",
-    "36cc5fc192476cd5",
-    "4690afab9c45594b",
-    "bf0037103ccd8df5",
-    "630ffc9336f37ebe",
-    "78f56e73583fe1f5",
-    "88d302aaeab974d2"
+    "4690afab9c45594b"
   ],
   "pedidos": {},
   "peticiones_libres": [
