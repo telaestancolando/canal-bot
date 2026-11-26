@@ -949,9 +949,34 @@ def quitar_cifras(g, error):
     return g
 
 
+def video_especial():
+    """Vídeo especial programado a mano (especial.json): solo el día y turno indicados."""
+    ruta = bot.RAIZ / "especial.json"
+    if not ruta.exists():
+        return None
+    esp = json.loads(ruta.read_text(encoding="utf-8"))
+    if esp.get("fecha") == dt.date.today().isoformat() and esp.get("turno", turno()) == turno():
+        return esp
+    return None
+
+
 def fase_guion():
     """Elige tema, escribe y verifica el guion, genera las voces y la lista de tomas 3D."""
     estado = leer_estado()
+    esp = video_especial()
+    if esp:
+        log("Hoy toca el vídeo especial:", esp["id"])
+        g = normalizar_guion(esp["guion"])
+        g["_categoria"] = "especial"
+        bot.SALIDA.mkdir(exist_ok=True)
+        (bot.SALIDA / "guion.json").write_text(json.dumps(g, ensure_ascii=False, indent=2), encoding="utf-8")
+        preparar_tareas(g, 777)
+        tema = {"id": esp["id"], "titulo": g["titulo_youtube"]}
+        plan = {"g": g, "categoria": "especial", "tema": tema, "parte": 1, "total": 1, "urls": [], "estado": estado,
+                "especial": True}
+        (bot.SALIDA / "plan.json").write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+        log("Guion especial y voces listos")
+        return
     for cat, lista in estado.get("temas_extra", {}).items():
         conocidos = {t["id"] for t in TEMAS.get(cat, [])}
         TEMAS.setdefault(cat, []).extend(t for t in lista if t["id"] not in conocidos)
@@ -1014,6 +1039,7 @@ def fase_render(worker=0, total=1):
 def fase_publicar(dir_frames=None):
     plan = json.loads((bot.SALIDA / "plan.json").read_text(encoding="utf-8"))
     g, categoria, tema, parte, total, urls, estado = (plan[k] for k in ("g", "categoria", "tema", "parte", "total", "urls", "estado"))
+    especial = plan.get("especial", False)
     largo, corto = montar_3d(g, dir_frames or str(bot.SALIDA / "fotogramas"))
     if PRUEBA:
         log("Modo prueba: no se sube nada.")
@@ -1029,7 +1055,7 @@ def fase_publicar(dir_frames=None):
     tags_yt = (g.get("palabras_clave", []) + g.get("tags", []))[:20]
     anterior = "\n⏪ ¿Te perdiste la parte 1? La tienes justo antes en el perfil." if parte > 1 else ""
     caption = (f"{g['titulo_post']}\n\n{g['texto_post']}{siguiente}{anterior}\n\n💬 {pregunta}\n\n"
-               f"🎬 Recreación en animación 3D\n\n"
+               f"{'' if especial else '🎬 Recreación en animación 3D' + chr(10) + chr(10)}"
                f"{tags_h} {CFG['hashtags']}")
     textos = bot.SALIDA / "textos_youtube.txt"
     textos.write_text(f"TITULO:\n{g['titulo_youtube']}\n\nDESCRIPCION:\n{descripcion}\n\n"
@@ -1061,7 +1087,9 @@ def fase_publicar(dir_frames=None):
         estado.setdefault("publicados", []).append(
             {"id": media_id, "categoria": categoria, "tema": tema["id"], "fecha": dt.datetime.utcnow().isoformat()})
         estado["publicados"] = estado["publicados"][-200:]
-    if parte < total:
+    if especial:
+        pass  # no toca la serie pendiente ni la lista de temas usados
+    elif parte < total:
         estado["pendiente"] = {"categoria": categoria, "id": tema["id"], "parte": parte + 1, "ig_parte1": media_id}
     else:
         estado["pendiente"] = None

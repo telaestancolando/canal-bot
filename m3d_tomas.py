@@ -171,8 +171,8 @@ def nubes_cercanas(centro_x0, centro_x1, z, ancho=900, n=40, gris=False, semilla
     for i in range(n):
         x = rng.uniform(min(centro_x0, centro_x1) - 300, max(centro_x0, centro_x1) + 300)
         y = rng.uniform(-ancho, ancho)
-        if abs(y) < 60:
-            y += 120 * (1 if y >= 0 else -1)
+        if abs(y) < 320:  # nunca nubes pegadas a la ruta del avión ni a la cámara
+            y = (320 + rng.uniform(0, 300)) * (1 if y >= 0 else -1)
         zz = z + rng.uniform(-150, 120)
         for k in range(rng.randint(3, 6)):
             r = rng.uniform(25, 70)

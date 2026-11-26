@@ -69,6 +69,9 @@ def tarjeta(W, H, etiqueta, titulo, acento, numero=None):
     texto = titulo if numero is None else numero
     tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
     tw = tmp.textlength(texto, font=f_t)
+    while tw > W * 0.84 and f_t.size > 20:  # títulos largos: letra más pequeña para que quepan
+        f_t = fuente("Black", f_t.size * 0.92)
+        tw = tmp.textlength(texto, font=f_t)
     ew = tmp.textlength(etiqueta.upper(), font=f_e) + 24 * s
     w = int(max(tw, ew) + 44 * s)
     h = int((112 if v else 104) * s)
