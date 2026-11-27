@@ -11,14 +11,10 @@
     "ba9",
     "aloha243",
     "af447",
-    "cubana972"
+    "cubana972",
+    "spanair-5022"
   ],
-  "pendiente": {
-    "categoria": "accidente",
-    "id": "spanair-5022",
-    "parte": 2,
-    "ig_parte1": "18656631658011065"
-  },
+  "pendiente": null,
   "publicados": [
     {
       "id": "18148838392576431",
@@ -31,7 +27,7 @@
       "categoria": "general",
       "tema": "boeing-airbus",
       "fecha": "2026-11-18T03:42:33.371019",
-      "score": 4
+      "score": 5
     },
     {
       "id": "18385174099239865",
@@ -52,7 +48,7 @@
       "categoria": "supervivencia",
       "tema": "andes571",
       "fecha": "2026-11-19T14:53:23.301715",
-      "score": 6
+      "score": 8
     },
     {
       "id": "18136503403747245",
@@ -66,7 +62,7 @@
       "categoria": "supervivencia",
       "tema": "hudson",
       "fecha": "2026-11-21T02:44:49.387253",
-      "score": 71
+      "score": 72
     },
     {
       "id": "18047619437827710",
@@ -101,27 +97,28 @@
       "categoria": "supervivencia",
       "tema": "ba9",
       "fecha": "2026-11-23T15:07:05.468910",
-      "score": 128
+      "score": 130
     },
     {
       "id": "17908251930353884",
       "categoria": "supervivencia",
       "tema": "aloha243",
       "fecha": "2026-11-24T02:49:38.516822",
-      "score": 81
+      "score": 82
     },
     {
       "id": "18111741980351201",
       "categoria": "accidente",
       "tema": "af447",
       "fecha": "2026-11-25T03:04:25.311547",
-      "score": 687
+      "score": 723
     },
     {
       "id": "18111275380958470",
       "categoria": "accidente",
       "tema": "af447",
-      "fecha": "2026-11-25T15:22:26.371070"
+      "fecha": "2026-11-25T15:22:26.371070",
+      "score": 152
     },
     {
       "id": "18164614423553343",
@@ -146,32 +143,43 @@
       "categoria": "especial",
       "tema": "especial-reto-10k",
       "fecha": "2026-11-27T02:38:42.136258"
+    },
+    {
+      "id": "18652399018061039",
+      "categoria": "accidente",
+      "tema": "spanair-5022",
+      "fecha": "2026-11-27T15:00:00.876027"
     }
   ],
   "comentarios_vistos": [
-    "52be819cd5f2a17e",
-    "36cc5fc192476cd5",
-    "a5f4343e7ed24c00",
-    "e6905cfcac2e5743",
-    "dfc286f52beea247",
-    "630ffc9336f37ebe",
-    "a8aff36d3ee54c17",
-    "2cb198adbec71af5",
-    "75e4558d4070def4",
-    "156647e4370c205f",
-    "78f56e73583fe1f5",
-    "bf0037103ccd8df5",
-    "be21680d1a8e6280",
-    "364b34f88894aae4",
-    "88d302aaeab974d2",
-    "03a4962e299e4d40",
-    "3e6fb1f39e809ddc",
-    "66b77d8e28df98b5",
-    "8328a82808a3aeb5",
-    "bdc3c0c47a34e8a1",
-    "58ecd7c5428c07ac",
     "17e6b1ccf0ba2c9f",
-    "4690afab9c45594b"
+    "8328a82808a3aeb5",
+    "f49f8c1b1c5a6f15",
+    "52be819cd5f2a17e",
+    "66b77d8e28df98b5",
+    "2cb198adbec71af5",
+    "a5f4343e7ed24c00",
+    "78f56e73583fe1f5",
+    "17056e12685ac505",
+    "156647e4370c205f",
+    "be21680d1a8e6280",
+    "630ffc9336f37ebe",
+    "bf0037103ccd8df5",
+    "364b34f88894aae4",
+    "4690afab9c45594b",
+    "3e6fb1f39e809ddc",
+    "bdc3c0c47a34e8a1",
+    "03a4962e299e4d40",
+    "58ecd7c5428c07ac",
+    "dfc286f52beea247",
+    "44e046a9d2a7a2fd",
+    "f476923a8d5b4fd1",
+    "36cc5fc192476cd5",
+    "47c15223f6dbb04a",
+    "88d302aaeab974d2",
+    "a8aff36d3ee54c17",
+    "e6905cfcac2e5743",
+    "75e4558d4070def4"
   ],
   "pedidos": {},
   "peticiones_libres": [
